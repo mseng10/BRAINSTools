@@ -36,7 +36,6 @@ void ResampleFromEyePoints(
   const typename TInputImage::ConstPointer & image,
   /* Outputs */
   VersorRigid3DTransform<double>::Pointer & VTrans,
-  typename TOutputImage::PointType &   RotAngle,
   typename TOutputImage::Pointer & resampledOutput
 )
 {
@@ -96,6 +95,7 @@ void ResampleFromEyePoints(
   rotation2[1] = 1;
   rotation2[2] = 0;
 
+  typename TOutputImage::PointType RotAngle;
   // Note: algorithm doesn't treat rotations about +L-axis
   RotAngle[0] = 0.0;
   RotAngle[1] = 0.0;
@@ -159,8 +159,6 @@ BRAINSHoughEyeDetector<TInputImage, TOutputImage>
   this->m_RoIImage            = TInputImage::New();
   this->m_LE.Fill(123);
   this->m_RE.Fill(123);
-  this->m_RotAngle = 333.3333;
-  this->m_Ipd                 = 0;
   this->m_Failure             = false;
 
   this->m_MaxInputPixelValue  = 0;
@@ -394,29 +392,21 @@ BRAINSHoughEyeDetector<TInputImage, TOutputImage>
     // Metric 1: Adult Interpupillary Distance ( IPD )
     // Mean: 63mm
     // Most likely: 50mm - 75mm
-    this->m_Ipd = this->m_LE.EuclideanDistanceTo(this->m_RE);
-    std::cout << "The resulted inter-pupilary distance is " << this->m_Ipd << " mm" << std::endl;
+    const double IPD_Distance = this->m_LE.EuclideanDistanceTo(this->m_RE);
+    std::cout << "The resulted inter-pupilary distance is " << IPD_Distance << " mm" << std::endl;
 
-    if( this->m_Ipd < 40 or this->m_Ipd > 85 )
+    if( IPD_Distance < 40 or IPD_Distance > 85 )
       {
       std::cerr << "WARNING: The distance is abnormal! Get ready to use a GUI corrector next." << std::endl;
       this->m_Failure = true;
       return;
       }
 
-
-    const InputPointType LE_Point = this->m_LE;
-    const InputPointType RE_Point = this->m_RE;
-
-    VersorTransformType::Pointer VTrans = this->m_VersorTransform;
-    VersorTransformType::Pointer InvVTrans = this->m_InvVersorTransform;
-
-
-    ResampleFromEyePoints<TInputImage,TOutputImage>( this->m_LE,this->m_RE, image, this->m_VersorTransform, this->m_RotAngle, this->m_OutputImage  );
+    ResampleFromEyePoints<TInputImage,TOutputImage>( this->m_LE,this->m_RE, image, this->m_VersorTransform, this->m_OutputImage  );
 
 
     // Get the inverse transform
-    if ( !m_VersorTransform->GetInverse( InvVTrans ) )
+    if ( !m_VersorTransform->GetInverse( this->m_InvVersorTransform ) )
       {
         itkGenericExceptionMacro( "Cannot get the inverse transform from Hough eye detector!" );
       }
