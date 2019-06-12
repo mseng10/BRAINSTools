@@ -305,6 +305,9 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
   constellation2->SetLEPoint( origSpaceLandmarks.at("LE") );
   constellation2->SetREPoint( origSpaceLandmarks.at("RE") );
   constellation2->SetCenterOfHeadMass( eyeFixedSpaceLandmarks.at("CM") ); //This is likely wrong!
+
+
+
   constellation2->SetHoughEyeTransform( org2eyeFixedLandmarkVersorTransform );
   constellation2->SetInput( eyeFixedResampledImage );
 
@@ -335,8 +338,13 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
   dggwriter->Update();
 
 
+  constellation2->SetForceACPoint( this->m_forceACPoint );     // In original space
+  constellation2->SetForcePCPoint( this->m_forcePCPoint );
+  constellation2->SetForceVN4Point( this->m_forceVN4Point );
+  constellation2->SetForceRPPoint( this->m_forceRPPoint );
+
   // tell the constellation detector if Hough eye detector fails
-  //HACK constellation2->SetHoughEyeFailure( houghEyeDetector->GetFailure() );
+  //HACK remove this constellation2->SetHoughEyeFailure( houghEyeDetector->GetFailure() );
   constellation2->SetInputTemplateModel( this->m_inputTemplateModel );
   constellation2->SetMspQualityLevel( this->m_mspQualityLevel );
   constellation2->SetOtsuPercentileThreshold( this->m_otsuPercentileThreshold );
@@ -347,10 +355,7 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
   constellation2->SetRescaleIntensitiesOutputRange( this->m_rescaleIntensitiesOutputRange );
   constellation2->SetBackgroundFillValueString( this->m_backgroundFillValueString );
   constellation2->SetInterpolationMode( this->m_interpolationMode );
-  constellation2->SetForceACPoint( this->m_forceACPoint );     // In original space
-  constellation2->SetForcePCPoint( this->m_forcePCPoint );
-  constellation2->SetForceVN4Point( this->m_forceVN4Point );
-  constellation2->SetForceRPPoint( this->m_forceRPPoint );
+
   constellation2->SetRadiusMPJ( this->m_radiusMPJ );
   constellation2->SetRadiusAC( this->m_radiusAC );
   constellation2->SetRadiusPC( this->m_radiusPC );
