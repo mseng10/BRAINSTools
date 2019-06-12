@@ -162,7 +162,7 @@ public:
   itkSetMacro(REPoint, SImagePointType);
 
   /** Set center of head mass **/
-  itkSetMacro(CenterOfHeadMass, SImagePointType);
+  itkSetMacro(CenterOfHeadMassInFixedEyeSpace, SImagePointType);
 
   /** Set the original input image before the Hough eye detector */
   itkSetObjectMacro(OriginalInputImage, SImageType);
@@ -334,7 +334,7 @@ protected:
                                                     // the original space by
                                                     // Hough eye detector
   SImagePointType  m_REPoint;
-  SImagePointType  m_CenterOfHeadMass;
+  SImagePointType  m_CenterOfHeadMassInFixedEyeSpace;
   LandmarksMapType m_landmarksEMSP;
   bool             m_HoughEyeFailure;
 

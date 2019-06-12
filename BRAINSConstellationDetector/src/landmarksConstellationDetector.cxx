@@ -730,7 +730,7 @@ void landmarksConstellationDetector::Compute( void )
         // Transform the centerOfHeadMass by finlaTmsp transform.
         VersorTransformType::Pointer localInvFinalTmsp = VersorTransformType::New();
         this->m_finalTmsp->GetInverse( localInvFinalTmsp );
-        SImageType::PointType localAlignedCOHM = localInvFinalTmsp->TransformPoint( this->m_CenterOfHeadMass );
+        SImageType::PointType localAlignedCOHM = localInvFinalTmsp->TransformPoint( this->m_CenterOfHeadMassInFixedEyeSpace );
 
         if( globalImagedebugLevel > 2 )
           {

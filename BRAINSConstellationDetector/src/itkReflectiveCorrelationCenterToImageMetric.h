@@ -322,7 +322,7 @@ public:
   {
     if( !m_CenterOfHeadMassIsSet )
       {
-      itkGenericExceptionMacro(<< "ERROR: m_CenterOfHeadMass is not set!" << std::endl);
+      itkGenericExceptionMacro(<< "ERROR: m_CenterOfHeadMassInFixedEyeSpace is not set!" << std::endl);
       }
     else
       {
@@ -590,7 +590,7 @@ private:
   {
     if( !m_CenterOfHeadMassIsSet )
       {
-      itkGenericExceptionMacro(<< "ERROR: m_CenterOfHeadMass is not set!" << std::endl);
+      itkGenericExceptionMacro(<< "ERROR: m_CenterOfHeadMassInFixedEyeSpace is not set!" << std::endl);
       }
     return this->m_CenterOfHeadMass;
   }
