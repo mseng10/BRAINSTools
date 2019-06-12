@@ -287,8 +287,8 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
         houghEyeDetector->GetInvVersorTransform()->TransformPoint( origSpaceLandmarks.at("CM") );
       std::cout << "POST HOUGH INV COHM: " << eyeFixedSpaceLandmarks.at("CM");
 
-      eyeFixedSpaceLandmarks["LE"] = houghEyeDetector->GetLE();
-      eyeFixedSpaceLandmarks["RE"] = houghEyeDetector->GetRE();
+      origSpaceLandmarks["LE"] = houghEyeDetector->GetLE();
+      origSpaceLandmarks["RE"] = houghEyeDetector->GetRE();
       eyeFixedResampledImage = houghEyeDetector->GetOutput();
     }
 
@@ -297,16 +297,17 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
   std::cout << "\nFinding named points with BRAINS Constellation Detector..." << std::endl;
   itk::BRAINSConstellationDetector2<ImageType, ImageType>::Pointer constellation2 = itk::BRAINSConstellationDetector2<ImageType, ImageType>::New();
 
-  if( !origSpaceLandmarks.empty() )
-    {
-      constellation2->SetLandmarksEMSP( origSpaceLandmarks );
-    }
+//  if( !origSpaceLandmarks.empty() )
+//    {
+//      constellation2->SetLandmarksEMSP( origSpaceLandmarks );
+//    }
 
-  constellation2->SetLEPoint( eyeFixedSpaceLandmarks.at("LE") );
-  constellation2->SetREPoint( eyeFixedSpaceLandmarks.at("RE") );
+  constellation2->SetLEPoint( origSpaceLandmarks.at("LE") );
+  constellation2->SetREPoint( origSpaceLandmarks.at("RE") );
+  constellation2->SetCenterOfHeadMass( eyeFixedSpaceLandmarks.at("CM") ); //This is likely wrong!
   constellation2->SetHoughEyeTransform( org2eyeFixedLandmarkVersorTransform );
   constellation2->SetInput( eyeFixedResampledImage );
-  constellation2->SetCenterOfHeadMass( eyeFixedSpaceLandmarks.at("CM") );
+
 
   //HACK: --- REMOVE ME
   std::string dggpath= "/tmp/nolmkinit_";
