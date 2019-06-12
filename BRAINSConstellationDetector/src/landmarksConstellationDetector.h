@@ -47,26 +47,26 @@ class landmarksConstellationDetector
   using VectorType = vnl_vector<double>;
   using ValMapType = std::map<std::string, float>;
 public:
-  landmarksConstellationDetector() :
-    m_mspQualityLevel(1),
-    m_HoughEyeFailure(false)
+  landmarksConstellationDetector()
+  : m_mspQualityLevel(1)
+  ,  m_HoughEyeFailure(false)
   {
     // Build midline landmarks name list
-    this->m_MidlinePointsList.push_back("AC");
-    this->m_MidlinePointsList.push_back("PC");
-    this->m_MidlinePointsList.push_back("RP");
-    this->m_MidlinePointsList.push_back("VN4");
-    this->m_MidlinePointsList.push_back("aq_4V");
-    this->m_MidlinePointsList.push_back("genu");
-    this->m_MidlinePointsList.push_back("rostrum");
-    this->m_MidlinePointsList.push_back("BPons");
-    this->m_MidlinePointsList.push_back("optic_chiasm");
-    this->m_MidlinePointsList.push_back("mid_ant");
-    this->m_MidlinePointsList.push_back("mid_horiz");
-    this->m_MidlinePointsList.push_back("mid_prim");
-    this->m_MidlinePointsList.push_back("mid_prim_inf");
-    this->m_MidlinePointsList.push_back("mid_prim_sup");
-    this->m_MidlinePointsList.push_back("mid_sup");
+    this->m_MidlinePointsList.emplace_back("AC");
+    this->m_MidlinePointsList.emplace_back("PC");
+    this->m_MidlinePointsList.emplace_back("RP");
+    this->m_MidlinePointsList.emplace_back("VN4");
+    this->m_MidlinePointsList.emplace_back("aq_4V");
+    this->m_MidlinePointsList.emplace_back("genu");
+    this->m_MidlinePointsList.emplace_back("rostrum");
+    this->m_MidlinePointsList.emplace_back("BPons");
+    this->m_MidlinePointsList.emplace_back("optic_chiasm");
+    this->m_MidlinePointsList.emplace_back("mid_ant");
+    this->m_MidlinePointsList.emplace_back("mid_horiz");
+    this->m_MidlinePointsList.emplace_back("mid_prim");
+    this->m_MidlinePointsList.emplace_back("mid_prim_inf");
+    this->m_MidlinePointsList.emplace_back("mid_prim_sup");
+    this->m_MidlinePointsList.emplace_back("mid_sup");
   }
 
   // Force the setting of the point values to override those that were specified.
@@ -101,7 +101,7 @@ public:
     m_OriginalInputImage = image; // This is the original input of BCD
   }
 
-  SImageType::Pointer GetOriginalInputImage(void) const
+  SImageType::Pointer GetOriginalInputImage() const
   {
     return this->m_OriginalInputImage; // Returns the original input of BCD
   }
@@ -111,10 +111,10 @@ public:
     m_InputTemplateModel = myModel;
   }
 
-  double GetModelHeight(std::string PointName)
-  {
-    return m_InputTemplateModel.GetHeight(PointName);
-  }
+//  double GetModelHeight(std::string PointName)
+//  {
+//    return m_InputTemplateModel.GetHeight(PointName);
+//  }
 
   double GetModelRadius(std::string PointName)
   {
@@ -130,7 +130,7 @@ public:
     return value;
   }
 
-  SImageType::PointType GetCenterOfHeadMassMSP(void) const
+  SImageType::PointType GetCenterOfHeadMassMSP() const
   {
     return this->m_CenterOfHeadMassEMSP;
   }
@@ -155,20 +155,20 @@ public:
     this->m_LEPoint = LEPoint;
   }
 
-  const SImageType::PointType & GetLEPoint() const
-  {
-    return this->m_LEPoint;
-  }
+//  const SImageType::PointType & GetLEPoint() const
+//  {
+//    return this->m_LEPoint;
+//  }
 
   void SetREPoint(const SImageType::PointType & REPoint)
   {
     this->m_REPoint = REPoint;
   }
 
-  const SImageType::PointType & GetREPoint() const
-  {
-    return this->m_REPoint;
-  }
+//  const SImageType::PointType & GetREPoint() const
+//  {
+//    return this->m_REPoint;
+//  }
 
   void SetCenterOfHeadMass(const SImageType::PointType & centerOfHeadMass)
   {
@@ -197,17 +197,17 @@ public:
     m_NamedPointEMSP.insert( landmarks.begin(), landmarks.end() );
   }
 
-  void Compute(void);
+  void Compute();
 
-  SImageType::Pointer GetTaggedImage(void) const
+  SImageType::Pointer GetTaggedImage() const
   {
     itk::ImageDuplicator<SImageType>::Pointer duplicator = itk::ImageDuplicator<SImageType>::New();
 
     duplicator->SetInputImage(this->GetOriginalInputImage());
     SImageType::Pointer taggedImage = duplicator->GetOutput();
 
-    SImageType::PixelType low=0.0;
-    SImageType::PixelType high=0.0;
+    SImageType::PixelType low=0;
+    SImageType::PixelType high=0;
     setLowHigh<SImageType>(taggedImage, low, high, 0.01F);
 
     SImageType::IndexType PTIndex;
@@ -223,10 +223,10 @@ public:
   }
 
 
-  SImageType::Pointer GetVolumeMSP()
-  {
-    return this->m_VolumeMSP;
-  }
+//  SImageType::Pointer GetVolumeMSP()
+//  {
+//    return this->m_VolumeMSP;
+//  }
 
   void SetatlasVolume( const std::string & atlasVolume )
     {
@@ -250,7 +250,7 @@ private:
 
   void DoResampleInPlace( const SImageType::ConstPointer, const RigidTransformType::ConstPointer, SImageType::Pointer & );
 
-  VersorTransformType::Pointer ComputeACPCAlignedZeroCenteredTransform(void);
+  VersorTransformType::Pointer ComputeACPCAlignedZeroCenteredTransform();
 
   // Linear model estimation using EPCA
   void LinearEstimation( LandmarksMapType & namedPoints, const std::vector<std::string> & processingList,
