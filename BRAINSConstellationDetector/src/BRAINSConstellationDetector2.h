@@ -162,7 +162,7 @@ public:
   itkSetMacro(orig_lmk_RE, SImagePointType);
 
   /** Set center of head mass **/
-  itkSetMacro(CenterOfHeadMassInFixedEyeSpace, SImagePointType);
+  itkSetMacro(eyeFixed_lmk_CenterOfHeadMass, SImagePointType);
 
   /** Set the original input image before the Hough eye detector */
   itkSetObjectMacro(OriginalInputImage, SImageType);
@@ -180,22 +180,11 @@ public:
   itkGetConstObjectMacro(OrigToACPCVersorTransform, VersorTransformType);
   itkGetConstObjectMacro(ACPCToOrigVersorTransform, VersorTransformType);
 
-  /** Get the named points in original space */
-  const LandmarksMapType & GetOriginalPoints()
-  {
-    return this->m_OriginalPoints;
-  }
 
   /** Get the aligned named points */
   const LandmarksMapType & GetAlignedPoints()
   {
     return this->m_AlignedPoints;
-  }
-
-  // This is wrong?
-  const SImagePointType & GetAlignedPoint(std::string name)
-  {
-    return this->m_AlignedPoints[name];
   }
 
   /** Get the interpolated output isotropic image */
@@ -279,15 +268,15 @@ public:
   itkSetMacro(ResultsDir, std::string);
 
   /** Set/Get EMSP landmarks */
-  void SetLandmarksEMSP(LandmarksMapType landmarks)
+  void Setmsp_lmks(LandmarksMapType landmarks)
   {
-    m_landmarksEMSP.clear();
-    m_landmarksEMSP.insert( landmarks.begin(), landmarks.end() );
+    m_msp_lmks.clear();
+    m_msp_lmks.insert( landmarks.begin(), landmarks.end() );
   }
 
-  LandmarksMapType GetLandmarksEMSP()
+  LandmarksMapType Getmsp_lmks()
   {
-    return m_landmarksEMSP;
+    return m_msp_lmks;
   }
 
   itkSetMacro(atlasVolume, std::string);
@@ -334,8 +323,8 @@ protected:
                                                     // the original space by
                                                     // Hough eye detector
   SImagePointType  m_orig_lmk_RE;
-  SImagePointType  m_CenterOfHeadMassInFixedEyeSpace;
-  LandmarksMapType m_landmarksEMSP;
+  SImagePointType  m_eyeFixed_lmk_CenterOfHeadMass;
+  LandmarksMapType m_msp_lmks;
   bool             m_HoughEyeFailure;
 
   std::map<std::string,
@@ -349,7 +338,6 @@ protected:
   VersorTransformType::Pointer m_OrigToACPCVersorTransform;
   VersorTransformType::Pointer m_ACPCToOrigVersorTransform;
   LandmarksMapType             m_AlignedPoints;
-  LandmarksMapType             m_OriginalPoints;
   SImageType::Pointer          m_OutputImage;          // Output image w/o
                                                        // interpolation
   SImageType::Pointer m_OutputResampledImage;          // Output image w/

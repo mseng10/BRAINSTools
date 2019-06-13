@@ -300,16 +300,16 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
 // HACK Try to put this back in
 //  if( !orig_lmks.empty() )
 //    {
-//      constellation2->SetLandmarksEMSP( orig_lmks );
+//      constellation2->Setmsp_lmks( orig_lmks );
 //    }
 
   constellation2->Setorig_lmk_LE( orig_lmks.at("LE") );
   constellation2->Setorig_lmk_RE( orig_lmks.at("RE") );
 
 #if 0 // HACK: Probably need to undo a translation somewhere in other file
-  constellation2->SetCenterOfHeadMassInFixedEyeSpace( orig_lmks.at("CM") );
+  constellation2->SeteyeFixed_lmk_CenterOfHeadMass( orig_lmks.at("CM") );
 #else
-  constellation2->SetCenterOfHeadMassInFixedEyeSpace( eyeFixed_lmks.at("CM") ); //This is likely wrong!
+  constellation2->SeteyeFixed_lmk_CenterOfHeadMass( eyeFixed_lmks.at("CM") ); //This is likely wrong!
 #endif
 
 

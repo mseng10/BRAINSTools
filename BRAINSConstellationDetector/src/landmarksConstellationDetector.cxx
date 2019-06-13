@@ -60,9 +60,9 @@ landmarksConstellationDetector::ComputeACPCAlignedZeroCenteredTransform(void)
   ZeroCenter.Fill(0.0);
 
   RigidTransformType::Pointer landmarkDefinedACPCAlignedToZeroTransform =
-    computeTmspFromPoints(GetNamedPointFromLandmarkList(this->GetOriginalSpaceNamedPoints(),"RP"),
-                          GetNamedPointFromLandmarkList(this->GetOriginalSpaceNamedPoints(),"AC"),
-                          GetNamedPointFromLandmarkList(this->GetOriginalSpaceNamedPoints(),"PC"),
+    computeTmspFromPoints(GetNamedPointFromLandmarkList( this->Getorig_lmks(),"RP"),
+                          GetNamedPointFromLandmarkList( this->Getorig_lmks(),"AC"),
+                          GetNamedPointFromLandmarkList( this->Getorig_lmks(),"PC"),
                           ZeroCenter);
 
   VersorTransformType::Pointer ACPCAlignedZeroCenteredTransform = VersorTransformType::New();
@@ -126,8 +126,8 @@ landmarksConstellationDetector::ComputeFinalRefinedACPCAlignedTransform(void)
   for( LandmarkConstIterator fixedIt = referenceAtlasLandmarks.begin(); fixedIt != referenceAtlasLandmarks.end();
     ++fixedIt )
     {
-    LandmarkConstIterator movingIt = this->m_OriginalSpaceNamedPoints.find( fixedIt->first );
-    if( movingIt != this->m_OriginalSpaceNamedPoints.end() )
+    LandmarkConstIterator movingIt = this->m_orig_lmks.find( fixedIt->first );
+    if( movingIt != this->m_orig_lmks.end() )
       {
       atlasLmks.push_back( fixedIt->second);
       movingLmks.push_back( movingIt->second);
@@ -190,7 +190,7 @@ landmarksConstellationDetector::ComputeFinalRefinedACPCAlignedTransform(void)
     brainsFitHelper->SetFixedVolume( fixedCastFilter->GetOutput() );
 
     CastFilterType::Pointer movingCastFilter = CastFilterType::New();
-    movingCastFilter->SetInput( this->m_OriginalInputImage );
+    movingCastFilter->SetInput( this->m_orig_img );
     movingCastFilter->Update();
     brainsFitHelper->SetMovingVolume( movingCastFilter->GetOutput() );
     itkUtil::WriteImage<FloatImageType>(movingCastFilter->GetOutput() , "./DEBUGFloatCastMovingImage.nii.gz");
@@ -236,7 +236,7 @@ landmarksConstellationDetector::ComputeFinalRefinedACPCAlignedTransform(void)
       {
       using ROIAutoType = itk::BRAINSROIAutoImageFilter<SImageType, itk::Image<unsigned char, 3> >;
       ROIAutoType::Pointer ROIFilter = ROIAutoType::New();
-      ROIFilter->SetInput( this->m_OriginalInputImage );
+      ROIFilter->SetInput( this->m_orig_img );
       ROIFilter->SetClosingSize(ROIAutoClosingSize);
       ROIFilter->SetDilateSize(ROIAutoDilateSize);
       ROIFilter->Update();
@@ -260,7 +260,7 @@ landmarksConstellationDetector::ComputeFinalRefinedACPCAlignedTransform(void)
     using VersorRigid3DTransformType = itk::VersorRigid3DTransform<double>;
     VersorTransformType::Pointer LandmarkOrigToACPCTransform = GetLandmarkTransformFromImageTransform( this->m_ImageOrigToACPCVersorTransform.GetPointer()  );
 
-    const VersorRigid3DTransformType::OutputPointType acPointInACPCSpace = LandmarkOrigToACPCTransform->TransformPoint(GetNamedPointFromLandmarkList(this->m_OriginalSpaceNamedPoints,"AC"));
+    const VersorRigid3DTransformType::OutputPointType acPointInACPCSpace = LandmarkOrigToACPCTransform->TransformPoint(GetNamedPointFromLandmarkList(this->m_orig_lmks,"AC"));
     //std::cout << "HACK: PRE-FIXING" << acPointInACPCSpace << std::endl;
       {
       VersorRigid3DTransformType::OffsetType translation;
@@ -272,7 +272,7 @@ landmarksConstellationDetector::ComputeFinalRefinedACPCAlignedTransform(void)
       }
 
     //LandmarkOrigToACPCTransform = GetLandmarkTransformFromImageTransform( this->m_ImageOrigToACPCVersorTransform.GetPointer()  );
-    //VersorRigid3DTransformType::OutputPointType newacPointInACPCSpace = LandmarkOrigToACPCTransform->TransformPoint(GetNamedPointFromLandmarkList(this->m_OriginalSpaceNamedPoints,"AC"));
+    //VersorRigid3DTransformType::OutputPointType newacPointInACPCSpace = LandmarkOrigToACPCTransform->TransformPoint(GetNamedPointFromLandmarkList(this->m_orig_lmks,"AC"));
     //std::cout << "HACK: POST-FIXING" << newacPointInACPCSpace << std::endl;
     //TODO:  This still does not put it to (0,0,0) and it should.
     }
@@ -662,28 +662,28 @@ void landmarksConstellationDetector::Compute( void )
   bool hasUserForcedPCPoint = true;
   bool hasUserForcedVN4Point = true;
 
-  if( ( this->m_NamedPointEMSP.find( "LE" ) == this->m_NamedPointEMSP.end() )
-      || ( this->m_NamedPointEMSP.find( "RE" ) == this->m_NamedPointEMSP.end() ) )
+  if( ( this->m_msp_lmks.find( "LE" ) == this->m_msp_lmks.end() )
+      || ( this->m_msp_lmks.find( "RE" ) == this->m_msp_lmks.end() ) )
     {
     hasUserSpecEyeCenterInfo = false;
     }
 
-  if( this->m_OriginalSpaceNamedPoints.find("RP") == this->m_OriginalSpaceNamedPoints.end() )
+  if( this->m_orig_lmks.find("RP") == this->m_orig_lmks.end() )
     {
     hasUserForcedRPPoint = false;
     }
 
-  if( this->m_OriginalSpaceNamedPoints.find("AC") == this->m_OriginalSpaceNamedPoints.end() )
+  if( this->m_orig_lmks.find("AC") == this->m_orig_lmks.end() )
     {
     hasUserForcedACPoint = false;
     }
 
-  if( this->m_OriginalSpaceNamedPoints.find("PC") == this->m_OriginalSpaceNamedPoints.end() )
+  if( this->m_orig_lmks.find("PC") == this->m_orig_lmks.end() )
     {
     hasUserForcedPCPoint = false;
     }
 
-  if( this->m_OriginalSpaceNamedPoints.find("VN4") == this->m_OriginalSpaceNamedPoints.end() )
+  if( this->m_orig_lmks.find("VN4") == this->m_orig_lmks.end() )
     {
     hasUserForcedVN4Point = false;
     }
@@ -691,22 +691,22 @@ void landmarksConstellationDetector::Compute( void )
   if( globalImagedebugLevel > 2 )
     {
     LandmarksMapType roughlyAlignedCHM;
-    roughlyAlignedCHM["CM"] = this->m_CenterOfHeadMass;
+    roughlyAlignedCHM["CM"] = this->m_orig_lmk_CenterOfHeadMass;
     const std::string roughlyAlignedCHMName( this->m_ResultsDir + "/roughlyAlignedCHM.fcsv" );
     WriteITKtoSlicer3Lmk( roughlyAlignedCHMName, roughlyAlignedCHM );
 
     const std::string roughlyAlignedVolumeName( this->m_ResultsDir + "/VolumeRoughAlignedWithHoughEye.nrrd" );
-    itkUtil::WriteImage<SImageType>( this->m_VolumeRoughAlignedWithHoughEye, roughlyAlignedVolumeName );
+    itkUtil::WriteImage<SImageType>( this->m_eyeFixed_img, roughlyAlignedVolumeName );
     }
 
   // Compute the estimated MSP transform, and aligned image
   double c_c = 0;
-  ComputeMSP( this->m_VolumeRoughAlignedWithHoughEye, this->m_finalTmsp,
-              this->m_VolumeMSP, this->m_CenterOfHeadMass, this->m_mspQualityLevel, c_c );
+  ComputeMSP( this->m_eyeFixed_img, this->m_eyeFixed2msp_lmk_tfm,
+              this->m_msp_img, this->m_orig_lmk_CenterOfHeadMass, this->m_mspQualityLevel, c_c );
 #if 0
   /*
    * If the MSP estimation is not good enough (i.e. c_c < -0.64), we try to compute the MSP again
-   * using the previous m_finalTmsp as an initial transform.
+   * using the previous m_eyeFixed2msp_lmk_tfm as an initial transform.
    * Threshold is set to 0.64 based on the statistical calculations on 23 successfully passed data.
    */
   if( c_c > -0.64 && !this->m_HoughEyeFailure )
@@ -723,14 +723,14 @@ void landmarksConstellationDetector::Compute( void )
 
         // Rotate VolumeRoughAlignedWithHoughEye by finalTmsp again.
         SImageType::Pointer localRoughAlignedInput;
-        DoResampleInPlace( this->m_VolumeRoughAlignedWithHoughEye.GetPointer(), // input
-                           this->m_finalTmsp.GetPointer(), // input
+        DoResampleInPlace( this->m_eyeFixed_img.GetPointer(), // input
+                           this->m_eyeFixed2msp_lmk_tfm.GetPointer(), // input
                            localRoughAlignedInput ); // output
 
         // Transform the centerOfHeadMass by finlaTmsp transform.
         VersorTransformType::Pointer localInvFinalTmsp = VersorTransformType::New();
-        this->m_finalTmsp->GetInverse( localInvFinalTmsp );
-        SImageType::PointType localAlignedCOHM = localInvFinalTmsp->TransformPoint( this->m_CenterOfHeadMassInFixedEyeSpace );
+        this->m_eyeFixed2msp_lmk_tfm->GetInverse( localInvFinalTmsp );
+        SImageType::PointType localAlignedCOHM = localInvFinalTmsp->TransformPoint( this->m_eyeFixed_lmk_CenterOfHeadMass );
 
         if( globalImagedebugLevel > 2 )
           {
@@ -749,10 +749,10 @@ void landmarksConstellationDetector::Compute( void )
         RigidTransformType::Pointer localTmsp;
         c_c = 0;
         ComputeMSP( localRoughAlignedInput, localTmsp,
-                   this->m_VolumeMSP, localAlignedCOHM, this->m_mspQualityLevel, c_c );
+                   this->m_msp_img, localAlignedCOHM, this->m_mspQualityLevel, c_c );
 
         // Compose the Tmsp transforms
-        this->m_finalTmsp->Compose(localTmsp);
+        this->m_eyeFixed2msp_lmk_tfm->Compose(localTmsp);
 
         if ( c_c < -0.64 )
           {
@@ -762,11 +762,11 @@ void landmarksConstellationDetector::Compute( void )
 
       using StatisticsFilterType = itk::StatisticsImageFilter<SImageType>;
       StatisticsFilterType::Pointer statisticsFilter = StatisticsFilterType::New();
-      statisticsFilter->SetInput(this->m_VolumeRoughAlignedWithHoughEye);
+      statisticsFilter->SetInput(this->m_eyeFixed_img);
       statisticsFilter->Update();
       SImageType::PixelType minPixelValue = statisticsFilter->GetMinimum();
 
-      this->m_VolumeMSP = TransformResample<SImageType, SImageType>( this->m_VolumeRoughAlignedWithHoughEye.GetPointer(),
+      this->m_msp_img = TransformResample<SImageType, SImageType>( this->m_eyeFixed_img.GetPointer(),
                                                                     MakeIsoTropicReferenceImage().GetPointer(),
                                                                     minPixelValue,
                                                                     GetInterpolatorFromString<SImageType>("Linear").GetPointer(),
@@ -803,7 +803,7 @@ void landmarksConstellationDetector::Compute( void )
                            << this->m_ResultsDir << ". Use GUI corrector to "
                            << "correct the landmarks in." << EMSP_Fiducial_file_name
                            << "INITIAL LMKS: " << EMSP_Fiducial_file_name
-                           << "FOR IMAGE: " << this->m_VolumeMSP
+                           << "FOR IMAGE: " << this->m_msp_img
                            << "IN DIR: " << this->m_ResultsDir
                            << std::endl;
       LandmarksMapType zeroEyeCenters;
@@ -814,35 +814,35 @@ void landmarksConstellationDetector::Compute( void )
         zeroEyeCenters["LE"] = zeroPoint;
         zeroEyeCenters["RE"] = zeroPoint;
       }
-      WriteManualFixFiles(EMSP_Fiducial_file_name, this->m_VolumeMSP, this->m_ResultsDir,
+      WriteManualFixFiles(EMSP_Fiducial_file_name, this->m_msp_img, this->m_ResultsDir,
                           zeroEyeCenters, failureMessageStream.str(), this->m_HoughEyeFailure);
     }
 
   if( globalImagedebugLevel > 2 )
     {
     const std::string MSP_ImagePlaneForOrig( this->m_ResultsDir + "/MSP_PLANE_For_Orig.nii.gz" );
-    CreatedebugPlaneImage( this->m_VolumeRoughAlignedWithHoughEye, MSP_ImagePlaneForOrig );
+    CreatedebugPlaneImage( this->m_eyeFixed_img, MSP_ImagePlaneForOrig );
     const std::string MSP_ImagePlane( this->m_ResultsDir + "/MSP_PLANE.nii.gz" );
-    CreatedebugPlaneImage( this->m_VolumeMSP, MSP_ImagePlane );
+    CreatedebugPlaneImage( this->m_msp_img, MSP_ImagePlane );
     }
 
   // HACK:  TODO:  DEBUG: Need to remove redundant need for volume and mask when
   // they can be the same image ( perhaps with a threshold );
-  SImageType::Pointer mask_LR = this->m_VolumeMSP;
+  SImageType::Pointer mask_LR = this->m_msp_img;
 
   VersorTransformType::Pointer InvHoughEyeTransform;
   if( !hasUserSpecEyeCenterInfo )
     {
     InvHoughEyeTransform = VersorTransformType::New();
-    this->m_HoughEyeTransform->GetInverse( InvHoughEyeTransform );
+    this->m_orig2eyeFixed_img_tfm->GetInverse( InvHoughEyeTransform );
     }
 
   VersorTransformType::Pointer InvFinalTmsp = VersorTransformType::New();
-  this->m_finalTmsp->GetInverse( InvFinalTmsp );
+  this->m_eyeFixed2msp_lmk_tfm->GetInverse( InvFinalTmsp );
 
-  this->m_CenterOfHeadMassEMSP =
-    InvFinalTmsp->TransformPoint( this->m_CenterOfHeadMass );
-  this->m_CenterOfHeadMassEMSP[0] = 0; // Search starts on the estimated MSP
+  this->m_msp_lmk_CenterOfHeadMass =
+    InvFinalTmsp->TransformPoint( this->m_orig_lmk_CenterOfHeadMass );
+  this->m_msp_lmk_CenterOfHeadMass[0] = 0; // Search starts on the estimated MSP
 
     {
     SImageType::PointType CandidateRPPoint;
@@ -859,18 +859,18 @@ void landmarksConstellationDetector::Compute( void )
 
     if( !hasUserSpecEyeCenterInfo )
       {
-      m_NamedPointEMSP["LE"] =
-        InvHoughEyeTransform->TransformPoint( this->m_LEPoint );
-      m_NamedPointEMSP["LE"] =
-        InvFinalTmsp->TransformPoint( this->m_NamedPointEMSP["LE"] );
-      m_NamedPointEMSP["RE"] =
-        InvHoughEyeTransform->TransformPoint( this->m_REPoint );
-      m_NamedPointEMSP["RE"] =
-        InvFinalTmsp->TransformPoint( this->m_NamedPointEMSP["RE"] );
+      m_msp_lmks["LE"] =
+        InvHoughEyeTransform->TransformPoint( this->m_orig_lmk_LE );
+      m_msp_lmks["LE"] =
+        InvFinalTmsp->TransformPoint( this->m_msp_lmks["LE"] );
+      m_msp_lmks["RE"] =
+        InvHoughEyeTransform->TransformPoint( this->m_orig_lmk_RE );
+      m_msp_lmks["RE"] =
+        InvFinalTmsp->TransformPoint( this->m_msp_lmks["RE"] );
       }
 
-    mspSpaceCEC.SetToMidPoint( this->m_NamedPointEMSP["LE"],
-                               this->m_NamedPointEMSP["RE"] );
+    mspSpaceCEC.SetToMidPoint( this->m_msp_lmks["LE"],
+                               this->m_msp_lmks["RE"] );
     mspSpaceCEC[0] = 0; // Search starts on the estimated MSP
 
     std::cout << "\nPerforming morphmetric search + local search..." << std::endl;
@@ -884,18 +884,18 @@ void landmarksConstellationDetector::Compute( void )
       double searchRadiusLR = 4.; // in mm, and it is only for landmarks near
                                   // MSP
       double cc_RP_Max = 0;
-      if( this->m_NamedPointEMSP.find( "RP" ) != this->m_NamedPointEMSP.end() )
+      if( this->m_msp_lmks.find( "RP" ) != this->m_msp_lmks.end() )
         {
-        CandidateRPPoint = this->m_NamedPointEMSP["RP"];
+        CandidateRPPoint = this->m_msp_lmks["RP"];
         std::cout << "Skip estimation, directly load from file." << std::endl;
         }
       else if( hasUserForcedRPPoint )
         {
         std::cout << "Skip estimation, directly forced by command line." << std::endl;
         // Points chosen by Slicer should be converted to proper ITK representation
-        this->m_OriginalSpaceNamedPoints["RP"][0] = -(this->m_OriginalSpaceNamedPoints["RP"][0]);
-        this->m_OriginalSpaceNamedPoints["RP"][1] = -(this->m_OriginalSpaceNamedPoints["RP"][1]);
-        CandidateRPPoint = InvFinalTmsp->TransformPoint( InvHoughEyeTransform->TransformPoint( this->m_OriginalSpaceNamedPoints["RP"] ) );
+        this->m_orig_lmks["RP"][0] = -(this->m_orig_lmks["RP"][0]);
+        this->m_orig_lmks["RP"][1] = -(this->m_orig_lmks["RP"][1]);
+        CandidateRPPoint = InvFinalTmsp->TransformPoint( InvHoughEyeTransform->TransformPoint( this->m_orig_lmks["RP"] ) );
         }
       else
         {
@@ -903,10 +903,10 @@ void landmarksConstellationDetector::Compute( void )
         // radius in SI direction.
         // It's large because some scans have extra contents of neck or shoulder
         CandidateRPPoint =
-          FindCandidatePoints( this->m_VolumeMSP, mask_LR, searchRadiusLR,
+          FindCandidatePoints( this->m_msp_img, mask_LR, searchRadiusLR,
                                3. * this->m_TemplateRadius["RP"],
                                5. * this->m_TemplateRadius["RP"],
-                               this->m_CenterOfHeadMassEMSP.GetVectorFromOrigin()
+                               this->m_msp_lmk_CenterOfHeadMass.GetVectorFromOrigin()
                                + this->m_InputTemplateModel.GetCMtoRPMean(),
                                this->m_InputTemplateModel.GetTemplateMeans( "RP" ),
                                this->m_InputTemplateModel.m_VectorIndexLocations["RP"],
@@ -916,7 +916,7 @@ void landmarksConstellationDetector::Compute( void )
       // Local search radius in LR direction is affected by the
       // estimated MSP error in LR direction
       const double err_MSP = std::abs( CandidateRPPoint[0]
-                                      - this->m_CenterOfHeadMassEMSP[0] );
+                                      - this->m_msp_lmk_CenterOfHeadMass[0] );
       std::cout << "The estimated MSP error in LR direction: "
                 << err_MSP << " mm" << std::endl;
 
@@ -962,23 +962,23 @@ void landmarksConstellationDetector::Compute( void )
 
       double cc_VN4_Max = 0;
 
-      if( this->m_NamedPointEMSP.find( "VN4" ) != this->m_NamedPointEMSP.end() )
+      if( this->m_msp_lmks.find( "VN4" ) != this->m_msp_lmks.end() )
         {
-        CandidateVN4Point = this->m_NamedPointEMSP["VN4"];
+        CandidateVN4Point = this->m_msp_lmks["VN4"];
         std::cout << "Skip estimation, directly load from file." << std::endl;
         }
       else if( hasUserForcedVN4Point )
         {
         std::cout << "Skip estimation, directly forced by command line." << std::endl;
         // Points chosen by Slicer should be converted to proper ITK representation
-        this->m_OriginalSpaceNamedPoints["VN4"][0] = -(this->m_OriginalSpaceNamedPoints["VN4"][0]);
-        this->m_OriginalSpaceNamedPoints["VN4"][1] = -(this->m_OriginalSpaceNamedPoints["VN4"][1]);
-        CandidateVN4Point = InvFinalTmsp->TransformPoint( InvHoughEyeTransform->TransformPoint( this->m_OriginalSpaceNamedPoints["VN4"] ) );
+        this->m_orig_lmks["VN4"][0] = -(this->m_orig_lmks["VN4"][0]);
+        this->m_orig_lmks["VN4"][1] = -(this->m_orig_lmks["VN4"][1]);
+        CandidateVN4Point = InvFinalTmsp->TransformPoint( InvHoughEyeTransform->TransformPoint( this->m_orig_lmks["VN4"] ) );
         }
       else
         {
         CandidateVN4Point =
-          FindCandidatePoints( this->m_VolumeMSP, mask_LR, searchRadiusLR,
+          FindCandidatePoints( this->m_msp_img, mask_LR, searchRadiusLR,
                                1.6 * this->m_TemplateRadius["VN4"],
                                1.6 * this->m_TemplateRadius["VN4"],
                                CandidateRPPoint.GetVectorFromOrigin() + RPtoVN4,
@@ -1003,23 +1003,23 @@ void landmarksConstellationDetector::Compute( void )
           ( RPtoCEC, this->m_InputTemplateModel.GetRPtoCECMean(),
           this->m_InputTemplateModel.GetRPtoXMean( "AC" ), 1 );
       double cc_AC_Max = 0;
-      if( this->m_NamedPointEMSP.find( "AC" ) != this->m_NamedPointEMSP.end() )
+      if( this->m_msp_lmks.find( "AC" ) != this->m_msp_lmks.end() )
         {
-        CandidateACPoint = this->m_NamedPointEMSP["AC"];
+        CandidateACPoint = this->m_msp_lmks["AC"];
         std::cout << "Skip estimation, directly load from file." << std::endl;
         }
       else if( hasUserForcedACPoint )
         {
         std::cout << "Skip estimation, directly forced by command line." << std::endl;
         // Points chosen by Slicer should be converted to proper ITK representation
-        this->m_OriginalSpaceNamedPoints["AC"][0] = -(this->m_OriginalSpaceNamedPoints["AC"][0]);
-        this->m_OriginalSpaceNamedPoints["AC"][1] = -(this->m_OriginalSpaceNamedPoints["AC"][1]);
-        CandidateACPoint = InvFinalTmsp->TransformPoint( InvHoughEyeTransform->TransformPoint( this->m_OriginalSpaceNamedPoints["AC"] ) );
+        this->m_orig_lmks["AC"][0] = -(this->m_orig_lmks["AC"][0]);
+        this->m_orig_lmks["AC"][1] = -(this->m_orig_lmks["AC"][1]);
+        CandidateACPoint = InvFinalTmsp->TransformPoint( InvHoughEyeTransform->TransformPoint( this->m_orig_lmks["AC"] ) );
         }
       else
         {
         CandidateACPoint =
-          FindCandidatePoints( this->m_VolumeMSP, mask_LR, searchRadiusLR,
+          FindCandidatePoints( this->m_msp_img, mask_LR, searchRadiusLR,
                                1.6 * this->m_TemplateRadius["AC"],
                                1.6 * this->m_TemplateRadius["AC"],
                                CandidateRPPoint.GetVectorFromOrigin() + RPtoAC,
@@ -1044,23 +1044,23 @@ void landmarksConstellationDetector::Compute( void )
           ( RPtoCEC, this->m_InputTemplateModel.GetRPtoCECMean(),
           this->m_InputTemplateModel.GetRPtoXMean( "PC" ), 1 );
       double cc_PC_Max = 0;
-      if( this->m_NamedPointEMSP.find( "PC" ) != this->m_NamedPointEMSP.end() )
+      if( this->m_msp_lmks.find( "PC" ) != this->m_msp_lmks.end() )
         {
-        CandidatePCPoint = this->m_NamedPointEMSP["PC"];
+        CandidatePCPoint = this->m_msp_lmks["PC"];
         std::cout << "Skip estimation, directly load from file." << std::endl;
         }
       else if( hasUserForcedPCPoint )
         {
         std::cout << "Skip estimation, directly forced by command line." << std::endl;
         // Points chosen by Slicer should be converted to proper ITK representation
-        this->m_OriginalSpaceNamedPoints["PC"][0] = -(this->m_OriginalSpaceNamedPoints["PC"][0]);
-        this->m_OriginalSpaceNamedPoints["PC"][1] = -(this->m_OriginalSpaceNamedPoints["PC"][1]);
-        CandidatePCPoint = InvFinalTmsp->TransformPoint( InvHoughEyeTransform->TransformPoint( this->m_OriginalSpaceNamedPoints["PC"] ) );
+        this->m_orig_lmks["PC"][0] = -(this->m_orig_lmks["PC"][0]);
+        this->m_orig_lmks["PC"][1] = -(this->m_orig_lmks["PC"][1]);
+        CandidatePCPoint = InvFinalTmsp->TransformPoint( InvHoughEyeTransform->TransformPoint( this->m_orig_lmks["PC"] ) );
         }
       else
         {
         CandidatePCPoint =
-          FindCandidatePoints( this->m_VolumeMSP, mask_LR, searchRadiusLR,
+          FindCandidatePoints( this->m_msp_img, mask_LR, searchRadiusLR,
                                4 * this->m_TemplateRadius["PC"],
                                4 * this->m_TemplateRadius["PC"],
                                CandidateRPPoint.GetVectorFromOrigin() + RPtoPC,
@@ -1082,9 +1082,9 @@ void landmarksConstellationDetector::Compute( void )
         {
         std::string BrandedImageAName( this->m_ResultsDir + "/BrandedImage.png" );
 
-        MakeBrandeddebugImage( this->m_VolumeMSP.GetPointer(),
+        MakeBrandeddebugImage( this->m_msp_img.GetPointer(),
                                this->m_InputTemplateModel,
-                               this->m_CenterOfHeadMassEMSP + this->m_InputTemplateModel.GetCMtoRPMean(),
+                               this->m_msp_lmk_CenterOfHeadMass + this->m_InputTemplateModel.GetCMtoRPMean(),
                                CandidateRPPoint + RPtoAC,
                                CandidateRPPoint + RPtoPC,
                                CandidateRPPoint + RPtoVN4,
@@ -1098,7 +1098,7 @@ void landmarksConstellationDetector::Compute( void )
         if( globalImagedebugLevel > 3 )
           {
           std::string LabelImageAName( this->m_ResultsDir + "/MSP_Mask.nii.gz" );
-          MakeLabelImage( this->m_VolumeMSP, CandidateRPPoint, CandidateACPoint,
+          MakeLabelImage( this->m_msp_img, CandidateRPPoint, CandidateACPoint,
                           CandidatePCPoint, CandidateVN4Point, LabelImageAName );
           }
         }
@@ -1109,64 +1109,64 @@ void landmarksConstellationDetector::Compute( void )
       // Save named points in original space
       if( !hasUserForcedRPPoint )
         {
-        this->m_OriginalSpaceNamedPoints["RP"] =
-          this->m_finalTmsp->TransformPoint( CandidateRPPoint );
+        this->m_orig_lmks["RP"] =
+          this->m_eyeFixed2msp_lmk_tfm->TransformPoint( CandidateRPPoint );
         }
 
       if( !hasUserForcedVN4Point )
         {
-        this->m_OriginalSpaceNamedPoints["VN4"] =
-          this->m_finalTmsp->TransformPoint( CandidateVN4Point );
+        this->m_orig_lmks["VN4"] =
+          this->m_eyeFixed2msp_lmk_tfm->TransformPoint( CandidateVN4Point );
         }
 
       if( !hasUserForcedACPoint )
         {
-        this->m_OriginalSpaceNamedPoints["AC"] =
-          this->m_finalTmsp->TransformPoint( CandidateACPoint );
+        this->m_orig_lmks["AC"] =
+          this->m_eyeFixed2msp_lmk_tfm->TransformPoint( CandidateACPoint );
         }
 
       if( !hasUserForcedPCPoint )
         {
-        this->m_OriginalSpaceNamedPoints["PC"] =
-          this->m_finalTmsp->TransformPoint( CandidatePCPoint );
+        this->m_orig_lmks["PC"] =
+          this->m_eyeFixed2msp_lmk_tfm->TransformPoint( CandidatePCPoint );
         }
 
-      this->m_OriginalSpaceNamedPoints["CM"] =
-        this->m_finalTmsp->TransformPoint( this->m_CenterOfHeadMassEMSP );
+      this->m_orig_lmks["CM"] =
+        this->m_eyeFixed2msp_lmk_tfm->TransformPoint( this->m_msp_lmk_CenterOfHeadMass );
 
       if( !hasUserSpecEyeCenterInfo )
         {
         if( !hasUserForcedRPPoint )
           {
-          this->m_OriginalSpaceNamedPoints["RP"] =
-            this->m_HoughEyeTransform->TransformPoint( this->m_OriginalSpaceNamedPoints["RP"] );
+          this->m_orig_lmks["RP"] =
+            this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks["RP"] );
           }
         if( !hasUserForcedVN4Point )
           {
-          this->m_OriginalSpaceNamedPoints["VN4"] =
-          this->m_HoughEyeTransform->TransformPoint( this->m_OriginalSpaceNamedPoints["VN4"] );
+          this->m_orig_lmks["VN4"] =
+          this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks["VN4"] );
           }
         if( !hasUserForcedACPoint )
           {
-          this->m_OriginalSpaceNamedPoints["AC"] =
-            this->m_HoughEyeTransform->TransformPoint( this->m_OriginalSpaceNamedPoints["AC"] );
+          this->m_orig_lmks["AC"] =
+            this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks["AC"] );
           }
         if( !hasUserForcedPCPoint )
           {
-          this->m_OriginalSpaceNamedPoints["PC"] =
-            this->m_HoughEyeTransform->TransformPoint( this->m_OriginalSpaceNamedPoints["PC"] );
+          this->m_orig_lmks["PC"] =
+            this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks["PC"] );
           }
-        this->m_OriginalSpaceNamedPoints["CM"] =
-          this->m_HoughEyeTransform->TransformPoint( this->m_OriginalSpaceNamedPoints["CM"] );
-        this->m_OriginalSpaceNamedPoints["LE"] = this->m_LEPoint;
-        this->m_OriginalSpaceNamedPoints["RE"] = this->m_REPoint;
+        this->m_orig_lmks["CM"] =
+          this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks["CM"] );
+        this->m_orig_lmks["LE"] = this->m_orig_lmk_LE;
+        this->m_orig_lmks["RE"] = this->m_orig_lmk_RE;
         }
       else
         {
-        this->m_OriginalSpaceNamedPoints["LE"] =
-          this->m_finalTmsp->TransformPoint( this->m_NamedPointEMSP["LE"] );
-        this->m_OriginalSpaceNamedPoints["RE"] =
-          this->m_finalTmsp->TransformPoint( this->m_NamedPointEMSP["RE"] );
+        this->m_orig_lmks["LE"] =
+          this->m_eyeFixed2msp_lmk_tfm->TransformPoint( this->m_msp_lmks["LE"] );
+        this->m_orig_lmks["RE"] =
+          this->m_eyeFixed2msp_lmk_tfm->TransformPoint( this->m_msp_lmks["RE"] );
         }
 
       // Write some debug images
@@ -1175,25 +1175,25 @@ void landmarksConstellationDetector::Compute( void )
           {
           std::string ResampledMaskmageName
             ( this->m_ResultsDir + "/Resampled_Mask.nii.gz" );
-          MakeLabelImage( this->m_VolumeRoughAlignedWithHoughEye, CandidateRPPoint,
+          MakeLabelImage( this->m_eyeFixed_img, CandidateRPPoint,
                           CandidateACPoint, CandidatePCPoint,
                           CandidateVN4Point, ResampledMaskmageName );
 
           std::string OrigMaskImageName
             ( this->m_ResultsDir + "/Orig_Mask.nii.gz" );
-          MakeLabelImage( this->m_VolumeRoughAlignedWithHoughEye, this->m_OriginalSpaceNamedPoints["RP"],
-                          this->m_OriginalSpaceNamedPoints["AC"], this->m_OriginalSpaceNamedPoints["PC"],
-                          this->m_OriginalSpaceNamedPoints["VN4"], OrigMaskImageName );
+          MakeLabelImage( this->m_eyeFixed_img, this->m_orig_lmks["RP"],
+                          this->m_orig_lmks["AC"], this->m_orig_lmks["PC"],
+                          this->m_orig_lmks["VN4"], OrigMaskImageName );
           }
         }
 
       // Save some named points in EMSP space mainly for debug use
         {
-        this->m_NamedPointEMSP["AC"] = CandidateACPoint;
-        this->m_NamedPointEMSP["PC"] = CandidatePCPoint;
-        this->m_NamedPointEMSP["RP"] = CandidateRPPoint;
-        this->m_NamedPointEMSP["VN4"] = CandidateVN4Point;
-        this->m_NamedPointEMSP["CM"] = this->m_CenterOfHeadMassEMSP;
+        this->m_msp_lmks["AC"] = CandidateACPoint;
+        this->m_msp_lmks["PC"] = CandidatePCPoint;
+        this->m_msp_lmks["RP"] = CandidateRPPoint;
+        this->m_msp_lmks["VN4"] = CandidateVN4Point;
+        this->m_msp_lmks["CM"] = this->m_msp_lmk_CenterOfHeadMass;
         // Eye centers in EMSP have been saved in a earlier time
         }
 
@@ -1208,19 +1208,19 @@ void landmarksConstellationDetector::Compute( void )
       LandmarksMapType NamedPointACPC;    // named points in ACPC-aligned space
         {
         NamedPointACPC["AC"] =
-          LandmarkOrigToACPCTransform->TransformPoint( this->m_OriginalSpaceNamedPoints["AC"] );
+          LandmarkOrigToACPCTransform->TransformPoint( this->m_orig_lmks["AC"] );
         NamedPointACPC["PC"] =
-          LandmarkOrigToACPCTransform->TransformPoint( this->m_OriginalSpaceNamedPoints["PC"] );
+          LandmarkOrigToACPCTransform->TransformPoint( this->m_orig_lmks["PC"] );
         NamedPointACPC["RP"] =
-          LandmarkOrigToACPCTransform->TransformPoint( this->m_OriginalSpaceNamedPoints["RP"] );
+          LandmarkOrigToACPCTransform->TransformPoint( this->m_orig_lmks["RP"] );
         NamedPointACPC["VN4"] =
-          LandmarkOrigToACPCTransform->TransformPoint( this->m_OriginalSpaceNamedPoints["VN4"] );
+          LandmarkOrigToACPCTransform->TransformPoint( this->m_orig_lmks["VN4"] );
         NamedPointACPC["CM"] =
-          LandmarkOrigToACPCTransform->TransformPoint( this->m_OriginalSpaceNamedPoints["CM"] );
+          LandmarkOrigToACPCTransform->TransformPoint( this->m_orig_lmks["CM"] );
         NamedPointACPC["LE"] =
-          LandmarkOrigToACPCTransform->TransformPoint( this->m_OriginalSpaceNamedPoints["LE"] );
+          LandmarkOrigToACPCTransform->TransformPoint( this->m_orig_lmks["LE"] );
         NamedPointACPC["RE"] =
-          LandmarkOrigToACPCTransform->TransformPoint( this->m_OriginalSpaceNamedPoints["RE"] );
+          LandmarkOrigToACPCTransform->TransformPoint( this->m_orig_lmks["RE"] );
         }
 
       // Get a copy of landmarks on ACPC plane for eliminating accumulative
@@ -1275,13 +1275,13 @@ void landmarksConstellationDetector::Compute( void )
             }
 
           std::cout << "Processing " << iit->first << "..." << std::endl;
-          if( this->m_NamedPointEMSP.find( iit->first ) != this->m_NamedPointEMSP.end() )
+          if( this->m_msp_lmks.find( iit->first ) != this->m_msp_lmks.end() )
             {
             std::cout << "Skip estimation, directly load from file." << std::endl;
-            this->m_OriginalSpaceNamedPoints[iit->first] =
-              this->m_finalTmsp->TransformPoint( this->m_NamedPointEMSP[iit->first] );
+            this->m_orig_lmks[iit->first] =
+              this->m_eyeFixed2msp_lmk_tfm->TransformPoint( this->m_msp_lmks[iit->first] );
             NamedPointACPC[iit->first] =
-              LandmarkOrigToACPCTransform->TransformPoint( this->m_OriginalSpaceNamedPoints[iit->first] );
+              LandmarkOrigToACPCTransform->TransformPoint( this->m_orig_lmks[iit->first] );
             NamedPointACPCRaw[iit->first] = NamedPointACPC[iit->first];
             }
           else
@@ -1292,7 +1292,7 @@ void landmarksConstellationDetector::Compute( void )
 
             // Find search center by linear model estimation with
             // dimension reduction.
-            // The result will be stored into this->m_NamedPointEMSP[iit->first]
+            // The result will be stored into this->m_msp_lmks[iit->first]
             LinearEstimation( NamedPointACPCRaw, processingList, numBaseLandmarks );
 
             // check whether it is midline landmark, set search range
@@ -1321,19 +1321,19 @@ void landmarksConstellationDetector::Compute( void )
             NamedPointACPC[iit->first][2] = NamedPointACPCRaw[iit->first][2];
 
             // Obtain the position of the current landmark in other spaces
-            this->m_OriginalSpaceNamedPoints[iit->first] =
+            this->m_orig_lmks[iit->first] =
               this->m_ImageOrigToACPCVersorTransform->TransformPoint( NamedPointACPC[iit->first] );
             if( !hasUserSpecEyeCenterInfo )
               {
-              this->m_NamedPointEMSP[iit->first] =
-                InvHoughEyeTransform->TransformPoint( this->m_OriginalSpaceNamedPoints[iit->first] );
-              this->m_NamedPointEMSP[iit->first] =
-                InvFinalTmsp->TransformPoint( this->m_NamedPointEMSP[iit->first] );
+              this->m_msp_lmks[iit->first] =
+                InvHoughEyeTransform->TransformPoint( this->m_orig_lmks[iit->first] );
+              this->m_msp_lmks[iit->first] =
+                InvFinalTmsp->TransformPoint( this->m_msp_lmks[iit->first] );
               }
             else
               {
-              this->m_NamedPointEMSP[iit->first] =
-                InvFinalTmsp->TransformPoint( this->m_OriginalSpaceNamedPoints[iit->first] );
+              this->m_msp_lmks[iit->first] =
+                InvFinalTmsp->TransformPoint( this->m_orig_lmks[iit->first] );
               }
 
             // Enable local search
@@ -1341,24 +1341,24 @@ void landmarksConstellationDetector::Compute( void )
               {
               // local search
               double cc_Max = 0;
-              this->m_NamedPointEMSP[iit->first] =
-                FindCandidatePoints( this->m_VolumeMSP, mask_LR, localSearchRadiusLR,
+              this->m_msp_lmks[iit->first] =
+                FindCandidatePoints( this->m_msp_img, mask_LR, localSearchRadiusLR,
                                      this->m_SearchRadii[iit->first],
                                      this->m_SearchRadii[iit->first],
-                                     this->m_NamedPointEMSP[iit->first].GetVectorFromOrigin(),
+                                     this->m_msp_lmks[iit->first].GetVectorFromOrigin(),
                                      this->m_InputTemplateModel.GetTemplateMeans( iit->first ),
                                      this->m_InputTemplateModel.m_VectorIndexLocations[iit->first],
                                      cc_Max, iit->first );
 
               // Update landmarks in input and ACPC-aligned space
-              this->m_OriginalSpaceNamedPoints[iit->first] = this->m_finalTmsp->TransformPoint( this->m_NamedPointEMSP[iit->first] );
+              this->m_orig_lmks[iit->first] = this->m_eyeFixed2msp_lmk_tfm->TransformPoint( this->m_msp_lmks[iit->first] );
               if( !hasUserSpecEyeCenterInfo )
                 {
-                this->m_OriginalSpaceNamedPoints[iit->first] =
-                  this->m_HoughEyeTransform->TransformPoint( this->m_OriginalSpaceNamedPoints[iit->first] );
+                this->m_orig_lmks[iit->first] =
+                  this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks[iit->first] );
                 }
               NamedPointACPC[iit->first] =
-                LandmarkOrigToACPCTransform->TransformPoint( this->m_OriginalSpaceNamedPoints[iit->first] );
+                LandmarkOrigToACPCTransform->TransformPoint( this->m_orig_lmks[iit->first] );
               }
             }
           } // End of arbitrary landmarks detection for the rest of "new" ones
@@ -1370,7 +1370,7 @@ void landmarksConstellationDetector::Compute( void )
         {
         WriteITKtoSlicer3Lmk
           ( this->m_ResultsDir + "/EMSP.fcsv",
-          this->m_NamedPointEMSP );
+          this->m_msp_lmks );
         }
       } // End of local searching kernel
     }   // End of local searching
