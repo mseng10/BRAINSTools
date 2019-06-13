@@ -43,39 +43,39 @@ std::string local_to_string(unsigned int i)
 //NOTE: LandmarkTransforms are inverse of ImageTransforms, (You pull images, you push landmarks)
 static
 VersorTransformType::Pointer
-GetLandmarkTransformFromImageTransform( VersorTransformType::ConstPointer ImageTransform )
+GetLandmarkTransformFromImageTransform( VersorTransformType::ConstPointer orig2msp_img_tfm )
 {
-  VersorTransformType::Pointer LandmarkOrigToACPCTransform = VersorTransformType::New();
-  SImageType::PointType        centerPoint = ImageTransform->GetCenter();
-  LandmarkOrigToACPCTransform->SetCenter( centerPoint );
-  LandmarkOrigToACPCTransform->SetIdentity();
-  ImageTransform->GetInverse( LandmarkOrigToACPCTransform );
-  return LandmarkOrigToACPCTransform;
+  VersorTransformType::Pointer orig2msp_lmk_tfm = VersorTransformType::New();
+  SImageType::PointType        centerPoint = orig2msp_img_tfm->GetCenter();
+  orig2msp_lmk_tfm->SetCenter( centerPoint );
+  orig2msp_lmk_tfm->SetIdentity();
+  orig2msp_img_tfm->GetInverse( orig2msp_lmk_tfm );
+  return orig2msp_lmk_tfm;
 }
 
 VersorTransformType::Pointer
-landmarksConstellationDetector::ComputeACPCAlignedZeroCenteredTransform(void)
+landmarksConstellationDetector::Compute_orig2msp_img_tfm()
 {
   SImageType::PointType ZeroCenter;
   ZeroCenter.Fill(0.0);
 
-  RigidTransformType::Pointer landmarkDefinedACPCAlignedToZeroTransform =
+  RigidTransformType::Pointer orig2msp_lmk_tfm_estimate =
     computeTmspFromPoints(GetNamedPointFromLandmarkList( this->Getorig_lmks(),"RP"),
                           GetNamedPointFromLandmarkList( this->Getorig_lmks(),"AC"),
                           GetNamedPointFromLandmarkList( this->Getorig_lmks(),"PC"),
                           ZeroCenter);
 
-  VersorTransformType::Pointer ACPCAlignedZeroCenteredTransform = VersorTransformType::New();
-  ACPCAlignedZeroCenteredTransform->SetFixedParameters( landmarkDefinedACPCAlignedToZeroTransform->GetFixedParameters() );
+  VersorTransformType::Pointer orig2msp_lmk_tfm_cleaned = VersorTransformType::New();
+  orig2msp_lmk_tfm_cleaned->SetFixedParameters( orig2msp_lmk_tfm_estimate->GetFixedParameters() );
 
   itk::Versor<double>               versorRotation;
   const itk::Matrix<double, 3, 3> & CleanedOrthogonalized =
-    itk::Orthogonalize3DRotationMatrix( landmarkDefinedACPCAlignedToZeroTransform->GetMatrix() );
+    itk::Orthogonalize3DRotationMatrix( orig2msp_lmk_tfm_estimate->GetMatrix() );
   versorRotation.Set( CleanedOrthogonalized );
 
-  ACPCAlignedZeroCenteredTransform->SetRotation( versorRotation );
-  ACPCAlignedZeroCenteredTransform->SetTranslation( landmarkDefinedACPCAlignedToZeroTransform->GetTranslation() );
-  return ACPCAlignedZeroCenteredTransform;
+  orig2msp_lmk_tfm_cleaned->SetRotation( versorRotation );
+  orig2msp_lmk_tfm_cleaned->SetTranslation( orig2msp_lmk_tfm_estimate->GetTranslation() );
+  return orig2msp_lmk_tfm_cleaned;
 }
 
 void
@@ -103,7 +103,7 @@ landmarksConstellationDetector::ComputeFinalRefinedACPCAlignedTransform( SImageT
   std::cout << "read atlas landmarks:  " << this->m_atlasLandmarks << std::endl;
   LandmarksMapType referenceAtlasLandmarks = ReadSlicer3toITKLmk( this->m_atlasLandmarks );
 
-  // Create a better version of this->m_ImageOrigToACPCVersorTransform using BRAINSFit.
+  // Create a better version of this->m_orig2msp_tfm using BRAINSFit.
   // take the the subjects landmarks in original space, and  landmarks from a reference Atlas, and compute an initial
   // affine transform
   // ( using logic from BRAINSLandmarkInitializer) and create initToAtlasAffineTransform.
@@ -247,18 +247,18 @@ landmarksConstellationDetector::ComputeFinalRefinedACPCAlignedTransform( SImageT
   brainsFitHelper->SetDebugLevel(10);
   brainsFitHelper->Update();
 
-  this->m_ImageOrigToACPCVersorTransform = itk::ComputeRigidTransformFromGeneric( brainsFitHelper->GetCurrentGenericTransform()->GetNthTransform(0).GetPointer() );
-  if( this->m_ImageOrigToACPCVersorTransform.IsNull() )
+  this->m_orig2msp_tfm = itk::ComputeRigidTransformFromGeneric( brainsFitHelper->GetCurrentGenericTransform()->GetNthTransform(0).GetPointer() );
+  if( this->m_orig2msp_tfm.IsNull() )
     {
     // Fail if something weird happens.
-    itkGenericExceptionMacro(<< "this->m_ImageOrigToACPCVersorTransform is null. "
+    itkGenericExceptionMacro(<< "this->m_orig2msp_tfm is null. "
                              << "It means we're not registering to the atlas, after all." << std::endl);
     }
 
     {
     //NOTE: LandmarkTransforms are inverse of ImageTransforms, (You pull images, you push landmarks)
     using VersorRigid3DTransformType = itk::VersorRigid3DTransform<double>;
-    VersorTransformType::Pointer LandmarkOrigToACPCTransform = GetLandmarkTransformFromImageTransform( this->m_ImageOrigToACPCVersorTransform.GetPointer()  );
+    VersorTransformType::Pointer LandmarkOrigToACPCTransform = GetLandmarkTransformFromImageTransform( this->m_orig2msp_tfm.GetPointer()  );
 
     const VersorRigid3DTransformType::OutputPointType acPointInACPCSpace = LandmarkOrigToACPCTransform->TransformPoint(GetNamedPointFromLandmarkList(this->m_eyeFixed_lmks,"AC"));
     //std::cout << "HACK: PRE-FIXING" << acPointInACPCSpace << std::endl;
@@ -268,10 +268,10 @@ landmarksConstellationDetector::ComputeFinalRefinedACPCAlignedTransform( SImageT
       translation[1] = +acPointInACPCSpace[1];
       translation[2] = +acPointInACPCSpace[2];
       //First shift the transform
-      this->m_ImageOrigToACPCVersorTransform->Translate( translation, false );
+      this->m_orig2msp_tfm->Translate( translation, false );
       }
 
-    //LandmarkOrigToACPCTransform = GetLandmarkTransformFromImageTransform( this->m_ImageOrigToACPCVersorTransform.GetPointer()  );
+    //LandmarkOrigToACPCTransform = GetLandmarkTransformFromImageTransform( this->m_orig2msp_tfm.GetPointer()  );
     //VersorRigid3DTransformType::OutputPointType newacPointInACPCSpace = LandmarkOrigToACPCTransform->TransformPoint(GetNamedPointFromLandmarkList(this->m_eyeFixed_lmks,"AC"));
     //std::cout << "HACK: POST-FIXING" << newacPointInACPCSpace << std::endl;
     //TODO:  This still does not put it to (0,0,0) and it should.
@@ -284,7 +284,7 @@ landmarksConstellationDetector::ComputeFinalRefinedACPCAlignedTransform( SImageT
 VersorTransformType::Pointer
 landmarksConstellationDetector::GetImageOrigToACPCVersorTransform(void) const
 {
-  return m_ImageOrigToACPCVersorTransform;
+  return m_orig2msp_tfm;
 }
 
 SImageType::PointType
@@ -1136,30 +1136,26 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
 
       if( !hasUserSpecEyeCenterInfo )
         {
+        LandmarksMapType & orig_lmks = m_eyeFixed_lmks; //BUG: Something is amiss here
         if( !hasUserForcedRPPoint )
           {
-          this->m_eyeFixed_lmks["RP"] =
-            this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_eyeFixed_lmks["RP"] );
+            orig_lmks["RP"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_eyeFixed_lmks["RP"] );
           }
         if( !hasUserForcedVN4Point )
           {
-          this->m_eyeFixed_lmks["VN4"] =
-          this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_eyeFixed_lmks["VN4"] );
+          orig_lmks["VN4"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_eyeFixed_lmks["VN4"] );
           }
         if( !hasUserForcedACPoint )
           {
-          this->m_eyeFixed_lmks["AC"] =
-            this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_eyeFixed_lmks["AC"] );
+            orig_lmks["AC"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_eyeFixed_lmks["AC"] );
           }
         if( !hasUserForcedPCPoint )
           {
-          this->m_eyeFixed_lmks["PC"] =
-            this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_eyeFixed_lmks["PC"] );
+            orig_lmks["PC"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_eyeFixed_lmks["PC"] );
           }
-        this->m_eyeFixed_lmks["CM"] =
-          this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_eyeFixed_lmks["CM"] );
-        this->m_eyeFixed_lmks["LE"] = this->m_orig_lmk_LE;
-        this->m_eyeFixed_lmks["RE"] = this->m_orig_lmk_RE;
+          orig_lmks["CM"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_eyeFixed_lmks["CM"] );
+          orig_lmks["LE"] = this->m_orig_lmk_LE;
+          orig_lmks["RE"] = this->m_orig_lmk_RE;
         }
       else
         {
@@ -1200,9 +1196,9 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       // Compute the AC-PC aligned transform
       // Note for the sake of EPCA, we need the transform at this stage
       // so that the method is robust against rotation
-      this->m_ImageOrigToACPCVersorTransform = this->ComputeACPCAlignedZeroCenteredTransform();
+      this->m_orig2msp_tfm = this->Compute_orig2msp_img_tfm();
       //NOTE: LandmarkTransforms are inverse of ImageTransforms, (You pull images, you push landmarks)
-      VersorTransformType::Pointer LandmarkOrigToACPCTransform = GetLandmarkTransformFromImageTransform( this->m_ImageOrigToACPCVersorTransform.GetPointer()  );
+      VersorTransformType::Pointer LandmarkOrigToACPCTransform = GetLandmarkTransformFromImageTransform( this->m_orig2msp_tfm.GetPointer()  );
 
       // Save some named points in AC-PC aligned space
       LandmarksMapType NamedPointACPC;    // named points in ACPC-aligned space
@@ -1322,7 +1318,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
 
             // Obtain the position of the current landmark in other spaces
             this->m_eyeFixed_lmks[iit->first] =
-              this->m_ImageOrigToACPCVersorTransform->TransformPoint( NamedPointACPC[iit->first] );
+              this->m_orig2msp_tfm->TransformPoint( NamedPointACPC[iit->first] );
             if( !hasUserSpecEyeCenterInfo )
               {
               this->m_msp_lmks[iit->first] =

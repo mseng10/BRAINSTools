@@ -248,7 +248,7 @@ private:
 
   void DoResampleInPlace( const SImageType::ConstPointer, const RigidTransformType::ConstPointer, SImageType::Pointer & );
 
-  VersorTransformType::Pointer ComputeACPCAlignedZeroCenteredTransform();
+  VersorTransformType::Pointer Compute_orig2msp_img_tfm();
 
   // Linear model estimation using EPCA
   void LinearEstimation( LandmarksMapType & namedPoints, const std::vector<std::string> & processingList,
@@ -306,7 +306,7 @@ private:
                                                   // midline landmarks
 
   RigidTransformType::Pointer  m_eyeFixed2msp_img_tfm;
-  VersorTransformType::Pointer m_ImageOrigToACPCVersorTransform;
+  VersorTransformType::Pointer m_orig2msp_tfm;
 
   // Wei: Read in LE, RE value for linear model estimation
   VersorTransformType::Pointer m_orig2eyeFixed_img_tfm;
