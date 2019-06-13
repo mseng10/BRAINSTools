@@ -150,7 +150,7 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
   caster->SetInput( rescaledInputVolume );
   caster->Update();
 
-  SImageType::Pointer origSpaceInputVolume = caster->GetOutput();
+  SImageType::Pointer orig_img = caster->GetOutput();
 
   /*
    * Look for existing manually identified landmark point files adjacent
@@ -207,10 +207,10 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
     }
 
   // load corresponding landmarks in EMSP aligned space from file if possible
-  LandmarksMapType origSpaceLandmarks;
+  LandmarksMapType orig_lmks;
   if( ! this->m_inputLandmarksEMSP.empty() )
     {
-    origSpaceLandmarks = ReadSlicer3toITKLmk( this->m_inputLandmarksEMSP );
+    orig_lmks = ReadSlicer3toITKLmk( this->m_inputLandmarksEMSP );
     }
 
 
@@ -218,16 +218,16 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
   // ------------------------------------
   // Find eye centers with BRAINS Hough Eye Detector
   HoughEyeDetectorType::Pointer houghEyeDetector = HoughEyeDetectorType::New();
-  itk::VersorRigid3DTransform<double>::Pointer orig2eyeFixedImageVersorTransform = nullptr;
-  itk::VersorRigid3DTransform<double>::Pointer org2eyeFixedLandmarkVersorTransform = nullptr;
+  itk::VersorRigid3DTransform<double>::Pointer orig2eyeFixed_img_tfm = nullptr;
+  itk::VersorRigid3DTransform<double>::Pointer orig2eyeFixed_lmk_tfm = nullptr;
   
  
-  LandmarksMapType eyeFixedSpaceLandmarks;
-  ImageType::Pointer eyeFixedResampledImage = nullptr;
+  LandmarksMapType eyeFixed_lmks;
+  ImageType::Pointer eyeFixed_img = nullptr;
   
   bool hasBothEyeLandmarksDefinedInOrigSpace = false;
-  if( ( origSpaceLandmarks.find( "LE" ) != origSpaceLandmarks.end() )
-    && ( origSpaceLandmarks.find( "RE" ) != origSpaceLandmarks.end() ) )
+  if( ( orig_lmks.find( "LE" ) != orig_lmks.end() )
+    && ( orig_lmks.find( "RE" ) != orig_lmks.end() ) )
     {
       hasBothEyeLandmarksDefinedInOrigSpace = true;
     }
@@ -236,36 +236,36 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
     {
     std::cout << "\nLoaded eye centers information for BRAINS Hough Eye Detector." << std::endl;
     std::cout << "Skip estimation steps for eye centers." << std::endl;
-    const SImageType::PointType origSpaceLE = origSpaceLandmarks.find("LE")->second;
-    const SImageType::PointType origSpaceRE = origSpaceLandmarks.find("RE")->second;
+    const SImageType::PointType orig_lmk_LE = orig_lmks.find("LE")->second;
+    const SImageType::PointType orig_lmk_RE = orig_lmks.find("RE")->second;
 
-    orig2eyeFixedImageVersorTransform = itk::ResampleFromEyePoints<ImageType, ImageType>( origSpaceLE, origSpaceRE, origSpaceInputVolume );
-    eyeFixedResampledImage = itk::RigidResampleInPlayByVersor3D< ImageType, ImageType >( origSpaceInputVolume, orig2eyeFixedImageVersorTransform );
+    orig2eyeFixed_img_tfm = itk::ResampleFromEyePoints<ImageType, ImageType>( orig_lmk_LE, orig_lmk_RE, orig_img );
+    eyeFixed_img = itk::RigidResampleInPlayByVersor3D< ImageType, ImageType >( orig_img, orig2eyeFixed_img_tfm );
 
     // Now transform landmarks based on the eye centerings.
-    org2eyeFixedLandmarkVersorTransform = itk::VersorRigid3DTransform<double>::New();
-    orig2eyeFixedImageVersorTransform->GetInverse(org2eyeFixedLandmarkVersorTransform);
-    for( auto & landmark_pair : origSpaceLandmarks)
+    orig2eyeFixed_lmk_tfm = itk::VersorRigid3DTransform<double>::New();
+    orig2eyeFixed_img_tfm->GetInverse(orig2eyeFixed_lmk_tfm);
+    for( auto & landmark_pair : orig_lmks)
       {
-        eyeFixedSpaceLandmarks[landmark_pair.first] = org2eyeFixedLandmarkVersorTransform->TransformPoint(landmark_pair.second);
+        eyeFixed_lmks[landmark_pair.first] = orig2eyeFixed_lmk_tfm->TransformPoint(landmark_pair.second);
       }
 
     //If CM is not provided from original space and moved to eyeFixedSpace, then compute it here from the eyeFixedImage
-    if ( eyeFixedSpaceLandmarks.find( "CM" ) == eyeFixedSpaceLandmarks.end() )
+    if ( eyeFixed_lmks.find( "CM" ) == eyeFixed_lmks.end() )
       {
-        eyeFixedSpaceLandmarks["CM"] = localFindCenterHeadFunc(eyeFixedResampledImage);
+        eyeFixed_lmks["CM"] = localFindCenterHeadFunc(eyeFixed_img);
       }
     }
   else
     {
     std::cout << "\nFinding eye centers with BRAINS Hough Eye Detector..." << std::endl;
-    houghEyeDetector->SetInput( origSpaceInputVolume );
+    houghEyeDetector->SetInput( orig_img );
     houghEyeDetector->SetHoughEyeDetectorMode( this->m_houghEyeDetectorMode );
     houghEyeDetector->SetResultsDir( this->m_resultsDir );           // debug output dir
     houghEyeDetector->SetWritedebuggingImagesLevel( this->m_writedebuggingImagesLevel );
 
-    origSpaceLandmarks["CM"]  = localFindCenterHeadFunc(origSpaceInputVolume);
-    houghEyeDetector->SetCenterOfHeadMass( origSpaceLandmarks.at("CM") );
+    orig_lmks["CM"]  = localFindCenterHeadFunc(orig_img);
+    houghEyeDetector->SetCenterOfHeadMass( orig_lmks.at("CM") );
 
     try
       {
@@ -280,16 +280,16 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
       {
       std::cout << "Failed to find eye centers exception occurred" << std::endl;
       }
-      org2eyeFixedLandmarkVersorTransform = houghEyeDetector->GetModifiableVersorTransform();
-      std::cout << "PRE COHM: " << origSpaceLandmarks.at("CM");
+      orig2eyeFixed_img_tfm = houghEyeDetector->GetModifiableVersorTransform();
+      orig2eyeFixed_lmk_tfm = itk::VersorRigid3DTransform<double>::New();
+      orig2eyeFixed_img_tfm->GetInverse(orig2eyeFixed_lmk_tfm);
 
-      eyeFixedSpaceLandmarks["CM"] =
-        houghEyeDetector->GetInvVersorTransform()->TransformPoint( origSpaceLandmarks.at("CM") );
-      std::cout << "POST HOUGH INV COHM: " << eyeFixedSpaceLandmarks.at("CM");
+      eyeFixed_lmks["CM"] = orig2eyeFixed_lmk_tfm->TransformPoint( orig_lmks.at("CM")  );
 
-      origSpaceLandmarks["LE"] = houghEyeDetector->GetLE();
-      origSpaceLandmarks["RE"] = houghEyeDetector->GetRE();
-      eyeFixedResampledImage = houghEyeDetector->GetOutput();
+      orig_lmks["LE"] = houghEyeDetector->GetLE();
+      orig_lmks["RE"] = houghEyeDetector->GetRE();
+
+      eyeFixed_img = itk::RigidResampleInPlayByVersor3D< SImageType, SImageType >( orig_img, orig2eyeFixed_img_tfm );
     }
 
   // ------------------------------------
@@ -297,23 +297,24 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
   std::cout << "\nFinding named points with BRAINS Constellation Detector..." << std::endl;
   itk::BRAINSConstellationDetector2<ImageType, ImageType>::Pointer constellation2 = itk::BRAINSConstellationDetector2<ImageType, ImageType>::New();
 
-//  if( !origSpaceLandmarks.empty() )
+// HACK Try to tput this back in
+//  if( !orig_lmks.empty() )
 //    {
-//      constellation2->SetLandmarksEMSP( origSpaceLandmarks );
+//      constellation2->SetLandmarksEMSP( orig_lmks );
 //    }
 
-  constellation2->SetLEPoint( origSpaceLandmarks.at("LE") );
-  constellation2->SetREPoint( origSpaceLandmarks.at("RE") );
+  constellation2->SetLEPoint( orig_lmks.at("LE") );
+  constellation2->SetREPoint( orig_lmks.at("RE") );
 
-#if 0 // HACK: PRobably need to undo a translatoin somewhere in other file
-  constellation2->SetCenterOfHeadMassInFixedEyeSpace( origSpaceLandmarks.at("CM") );
+#if 0 // HACK: Probably need to undo a translation somewhere in other file
+  constellation2->SetCenterOfHeadMassInFixedEyeSpace( orig_lmks.at("CM") );
 #else
-  constellation2->SetCenterOfHeadMassInFixedEyeSpace( eyeFixedSpaceLandmarks.at("CM") ); //This is likely wrong!
+  constellation2->SetCenterOfHeadMassInFixedEyeSpace( eyeFixed_lmks.at("CM") ); //This is likely wrong!
 #endif
 
 
-  constellation2->SetHoughEyeTransform( org2eyeFixedLandmarkVersorTransform );
-  constellation2->SetInput( eyeFixedResampledImage );
+  constellation2->SetHoughEyeTransform( orig2eyeFixed_img_tfm );
+  constellation2->SetInput( eyeFixed_img );
 
 
   //HACK: --- REMOVE ME
@@ -330,15 +331,15 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
   std::cout << "\n\nHACK: REMOVE ME\n\n" << std::endl;
   std::cout << "\n\nHACK: REMOVE ME\n\n" << std::endl;
 
-  WriteITKtoSlicer3Lmk(dggpath + "eye_orig_space.fcsv", origSpaceLandmarks);
-  WriteITKtoSlicer3Lmk(dggpath + "eye_fixed_space.fcsv", eyeFixedSpaceLandmarks);
+  WriteITKtoSlicer3Lmk(dggpath + "eye_orig_space.fcsv", orig_lmks);
+  WriteITKtoSlicer3Lmk(dggpath + "eye_fixed_space.fcsv", eyeFixed_lmks);
 
   WriterType::Pointer dggwriter = WriterType::New();
   dggwriter->SetFileName( dggpath + "eye_fixed.nii.gz" );
-  dggwriter->SetInput( eyeFixedResampledImage );
+  dggwriter->SetInput( eyeFixed_img );
   dggwriter->Update();
   dggwriter->SetFileName( dggpath + "eye_orig_space.nii.gz" );
-  dggwriter->SetInput( origSpaceInputVolume );
+  dggwriter->SetInput( orig_img );
   dggwriter->Update();
 
 
@@ -372,7 +373,7 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
   constellation2->SetLlsMatrices( llsMatrices );
   constellation2->SetLlsMeans( llsMeans );
   constellation2->SetSearchRadii( searchRadii );
-  constellation2->SetOriginalInputImage( origSpaceInputVolume );
+  constellation2->SetOriginalInputImage( orig_img );
   constellation2->SetatlasVolume( this->m_atlasVolume );
   constellation2->SetatlasLandmarks( this->m_atlasLandmarks );
   constellation2->SetatlasLandmarkWeights( this->m_atlasLandmarkWeights );
