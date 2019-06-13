@@ -96,12 +96,15 @@ int main(int argc, char *argv[])
                                                        // accumulator images
   houghEyeDetector->Update();
 
-  ImagePointType leftEye   = houghEyeDetector->GetLE();
-  ImagePointType rightEye  = houghEyeDetector->GetRE();
-  ImagePointType alignedLE =
-    houghEyeDetector->GetInvVersorTransform()->TransformPoint(leftEye);
-  ImagePointType alignedRE =
-    houghEyeDetector->GetInvVersorTransform()->TransformPoint(rightEye);
+  ImagePointType leftEye   = houghEyeDetector->Getorig_lmk_LE();
+  ImagePointType rightEye  = houghEyeDetector->Getorig_lmk_RE();
+
+  itk::VersorRigid3DTransform<double>::Pointer orig2eyeFixed_img_tfm = houghEyeDetector->GetModifiableorig2eyeFixedTransform();
+  itk::VersorRigid3DTransform<double>::Pointer orig2eyeFixed_lmk_tfm = itk::VersorRigid3DTransform<double>::New();
+  orig2eyeFixed_img_tfm->GetInverse(orig2eyeFixed_lmk_tfm);
+
+  ImagePointType alignedLE = orig2eyeFixed_lmk_tfm->TransformPoint(leftEye);
+  ImagePointType alignedRE = orig2eyeFixed_lmk_tfm->TransformPoint(rightEye);
 
   std::cout << "Left eye = " << leftEye << std::endl;
   std::cout << "Right eye = " << rightEye << std::endl;

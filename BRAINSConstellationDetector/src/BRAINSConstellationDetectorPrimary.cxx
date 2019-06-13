@@ -280,14 +280,14 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
       {
       std::cout << "Failed to find eye centers exception occurred" << std::endl;
       }
-      orig2eyeFixed_img_tfm = houghEyeDetector->GetModifiableVersorTransform();
+      orig2eyeFixed_img_tfm = houghEyeDetector->GetModifiableorig2eyeFixedTransform();
       orig2eyeFixed_lmk_tfm = itk::VersorRigid3DTransform<double>::New();
       orig2eyeFixed_img_tfm->GetInverse(orig2eyeFixed_lmk_tfm);
 
       eyeFixed_lmks["CM"] = orig2eyeFixed_lmk_tfm->TransformPoint( orig_lmks.at("CM")  );
 
-      orig_lmks["LE"] = houghEyeDetector->GetLE();
-      orig_lmks["RE"] = houghEyeDetector->GetRE();
+      orig_lmks["LE"] = houghEyeDetector->Getorig_lmk_LE();
+      orig_lmks["RE"] = houghEyeDetector->Getorig_lmk_RE();
 
       eyeFixed_img = itk::RigidResampleInPlayByVersor3D< SImageType, SImageType >( orig_img, orig2eyeFixed_img_tfm );
     }

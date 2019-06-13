@@ -195,20 +195,18 @@ BRAINSHoughEyeDetector<TInputImage, TOutputImage>
   /** Output parameters */
   this->m_AccumulatorImage    = TInputImage::New();
   this->m_RoIImage            = TInputImage::New();
-  this->m_LE.Fill(123);
-  this->m_RE.Fill(123);
+  this->m_orig_lmk_LE.Fill(123);
+  this->m_orig_lmk_RE.Fill(123);
   this->m_Failure             = false;
 
   this->m_MaxInputPixelValue  = 0;
   this->m_MinInputPixelValue  = 0;
-  this->m_OutputImage         = TOutputImage::New();
 
   this->m_MaxInputPixelValue = -1234;
   this->m_MinInputPixelValue = 1234;
 
   /** Internal parameters */
-  this->m_VersorTransform     = VersorTransformType::New();
-  this->m_InvVersorTransform  = VersorTransformType::New();
+  this->m_orig2eyeFixedTransform     = VersorTransformType::New();
 }
 
 template <typename TInputImage, typename TOutputImage>
@@ -411,16 +409,16 @@ BRAINSHoughEyeDetector<TInputImage, TOutputImage>
       {
       for( unsigned int i = 0; i < Dimension; ++i )
         {
-        this->m_LE[i] = physicalEye1[i];
-        this->m_RE[i] = physicalEye2[i];
+        this->m_orig_lmk_LE[i] = physicalEye1[i];
+        this->m_orig_lmk_RE[i] = physicalEye2[i];
         }
       }
     else
       {
       for( unsigned int i = 0; i < Dimension; ++i )
         {
-        this->m_LE[i] = physicalEye2[i];   // eye2 is on the left
-        this->m_RE[i] = physicalEye1[i];
+        this->m_orig_lmk_LE[i] = physicalEye2[i];   // eye2 is on the left
+        this->m_orig_lmk_RE[i] = physicalEye1[i];
         }
       }
 
@@ -428,16 +426,7 @@ BRAINSHoughEyeDetector<TInputImage, TOutputImage>
      * Metrics Collection
      */
 
-    this->m_VersorTransform = ResampleFromEyePoints<TInputImage,TOutputImage>( this->m_LE, this->m_RE, image );
-    this->m_OutputImage = RigidResampleInPlayByVersor3D< TInputImage, TOutputImage >( image, this->m_VersorTransform );
-
-    // Get the inverse transform
-    if ( !m_VersorTransform->GetInverse( this->m_InvVersorTransform ) )
-      {
-        itkGenericExceptionMacro( "Cannot get the inverse transform from Hough eye detector!" );
-      }
-    this->GraftOutput( this->m_OutputImage );
-
+    this->m_orig2eyeFixedTransform = ResampleFromEyePoints<TInputImage,TOutputImage>( this->m_orig_lmk_LE, this->m_orig_lmk_RE, image );
     }
 }
 
