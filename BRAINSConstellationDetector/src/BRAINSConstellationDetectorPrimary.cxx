@@ -297,14 +297,14 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
   std::cout << "\nFinding named points with BRAINS Constellation Detector..." << std::endl;
   itk::BRAINSConstellationDetector2<ImageType, ImageType>::Pointer constellation2 = itk::BRAINSConstellationDetector2<ImageType, ImageType>::New();
 
-// HACK Try to tput this back in
+// HACK Try to put this back in
 //  if( !orig_lmks.empty() )
 //    {
 //      constellation2->SetLandmarksEMSP( orig_lmks );
 //    }
 
-  constellation2->SetLEPoint( orig_lmks.at("LE") );
-  constellation2->SetREPoint( orig_lmks.at("RE") );
+  constellation2->Setorig_lmk_LE( orig_lmks.at("LE") );
+  constellation2->Setorig_lmk_RE( orig_lmks.at("RE") );
 
 #if 0 // HACK: Probably need to undo a translation somewhere in other file
   constellation2->SetCenterOfHeadMassInFixedEyeSpace( orig_lmks.at("CM") );

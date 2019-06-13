@@ -156,10 +156,10 @@ public:
   itkSetObjectMacro(HoughEyeTransform, VersorTransformType);
 
   /** Set LE point */
-  itkSetMacro(LEPoint, SImagePointType);
+  itkSetMacro(orig_lmk_LE, SImagePointType);
 
   /** Set RE point */
-  itkSetMacro(REPoint, SImagePointType);
+  itkSetMacro(orig_lmk_RE, SImagePointType);
 
   /** Set center of head mass **/
   itkSetMacro(CenterOfHeadMassInFixedEyeSpace, SImagePointType);
@@ -169,7 +169,7 @@ public:
   itkGetConstObjectMacro(OriginalInputImage, SImageType);
 
   /** GetHoughEyeAlignedImage */
-  SImageType::ConstPointer GetHoughEyeAlignedImage(void) const
+  SImageType::ConstPointer GetHoughEyeAlignedImage() const
     {
     SImageType::ConstPointer internalImage = this->GetInput(0);
     return internalImage;
@@ -330,10 +330,10 @@ protected:
   VersorTransformType::Pointer m_HoughEyeTransform; // help to get the points
                                                     // location in the original
                                                     // space
-  SImagePointType m_LEPoint;                        // automated estimated LE in
+  SImagePointType m_orig_lmk_LE;                        // automated estimated LE in
                                                     // the original space by
                                                     // Hough eye detector
-  SImagePointType  m_REPoint;
+  SImagePointType  m_orig_lmk_RE;
   SImagePointType  m_CenterOfHeadMassInFixedEyeSpace;
   LandmarksMapType m_landmarksEMSP;
   bool             m_HoughEyeFailure;

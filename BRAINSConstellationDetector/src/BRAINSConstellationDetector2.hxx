@@ -60,8 +60,8 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
   this->m_OriginalInputImage = nullptr;
   this->m_HoughEyeTransform = nullptr;
 
-  this->m_LEPoint.Fill(-123.0);
-  this->m_REPoint.Fill(-123.0);
+  this->m_orig_lmk_LE.Fill(-123.0);
+  this->m_orig_lmk_RE.Fill(-123.0);
   this->m_CenterOfHeadMassInFixedEyeSpace.Fill(-12345.0);
 
   m_landmarksEMSP.clear();
@@ -271,8 +271,8 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
       || ( this->m_landmarksEMSP.find("RE") == this->m_landmarksEMSP.end() ) )
     {
     myDetector.SetHoughEyeTransform(this->m_HoughEyeTransform);
-    myDetector.SetLEPoint(this->m_LEPoint);
-    myDetector.SetREPoint(this->m_REPoint);
+    myDetector.Setorig_lmk_LE( this->m_orig_lmk_LE );
+    myDetector.Setorig_lmk_RE( this->m_orig_lmk_RE );
     }
 
     { /** Force setting the landmark points from the command line. */

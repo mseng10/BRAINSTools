@@ -150,24 +150,24 @@ public:
     m_HoughEyeFailure = failure;
   }
 
-  void SetLEPoint(const SImageType::PointType & LEPoint)
+  void Setorig_lmk_LE(const SImageType::PointType & LEPoint)
   {
     this->m_LEPoint = LEPoint;
   }
 
 //  const SImageType::PointType & GetLEPoint() const
 //  {
-//    return this->m_LEPoint;
+//    return this->m_orig_lmk_LE;
 //  }
 
-  void SetREPoint(const SImageType::PointType & REPoint)
+  void Setorig_lmk_RE( const SImageType::PointType& REPoint)
   {
     this->m_REPoint = REPoint;
   }
 
 //  const SImageType::PointType & GetREPoint() const
 //  {
-//    return this->m_REPoint;
+//    return this->m_orig_lmk_RE;
 //  }
 
   void SetCenterOfHeadMass(const SImageType::PointType & centerOfHeadMass)
