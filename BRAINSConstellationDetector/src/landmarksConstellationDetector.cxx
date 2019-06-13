@@ -845,10 +845,10 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
   this->m_msp_lmk_CenterOfHeadMass[0] = 0; // Search starts on the estimated MSP
 
     {
-    SImageType::PointType CandidateRPPoint;
-    SImageType::PointType CandidatePCPoint;
-    SImageType::PointType CandidateVN4Point;
-    SImageType::PointType CandidateACPoint;
+    SImageType::PointType msp_lmk_RP_Candidate;
+    SImageType::PointType msp_lmk_PC_Candiate;
+    SImageType::PointType msp_lmk_VN4_Candidate;
+    SImageType::PointType msp_lmk_AC_Candidate;
 
     SImageType::PointType::VectorType RPtoCEC;
     SImageType::PointType::VectorType RPtoVN4;
@@ -886,7 +886,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       double cc_RP_Max = 0;
       if( this->m_msp_lmks.find( "RP" ) != this->m_msp_lmks.end() )
         {
-        CandidateRPPoint = this->m_msp_lmks["RP"];
+        msp_lmk_RP_Candidate = this->m_msp_lmks["RP"];
         std::cout << "Skip estimation, directly load from file." << std::endl;
         }
       else if( hasUserForcedRPPoint )
@@ -895,14 +895,14 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
         // Points chosen by Slicer should be converted to proper ITK representation
         this->m_eyeFixed_lmks["RP"][0] = -(this->m_eyeFixed_lmks["RP"][0]);
         this->m_eyeFixed_lmks["RP"][1] = -(this->m_eyeFixed_lmks["RP"][1]);
-        CandidateRPPoint = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_eyeFixed_lmks["RP"] ) );
+        msp_lmk_RP_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_eyeFixed_lmks["RP"] ) );
         }
       else
         {
         // The search radius of RP is set to 5 times larger than its template
         // radius in SI direction.
         // It's large because some scans have extra contents of neck or shoulder
-        CandidateRPPoint =
+        msp_lmk_RP_Candidate =
           FindCandidatePoints( this->m_msp_img, mask_LR, searchRadiusLR,
                                3. * this->m_TemplateRadius["RP"],
                                5. * this->m_TemplateRadius["RP"],
@@ -915,7 +915,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
 
       // Local search radius in LR direction is affected by the
       // estimated MSP error in LR direction
-      const double err_MSP = std::abs( CandidateRPPoint[0]
+      const double err_MSP = std::abs( msp_lmk_RP_Candidate[0]
                                       - this->m_msp_lmk_CenterOfHeadMass[0] );
       std::cout << "The estimated MSP error in LR direction: "
                 << err_MSP << " mm" << std::endl;
@@ -953,7 +953,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
        * 4. VN4 is always below CEC-MPJ line on MSP plane
        */
       std::cout << "Processing 4VN..." << std::endl;
-      RPtoCEC = mspSpaceCEC - CandidateRPPoint;
+      RPtoCEC = mspSpaceCEC - msp_lmk_RP_Candidate;
 
       // RPtoVN4 = this->m_InputTemplateModel.GetRPtoXMean( "VN4" );
       RPtoVN4 = FindVectorFromPointAndVectors
@@ -964,7 +964,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
 
       if( this->m_msp_lmks.find( "VN4" ) != this->m_msp_lmks.end() )
         {
-        CandidateVN4Point = this->m_msp_lmks["VN4"];
+        msp_lmk_VN4_Candidate = this->m_msp_lmks["VN4"];
         std::cout << "Skip estimation, directly load from file." << std::endl;
         }
       else if( hasUserForcedVN4Point )
@@ -973,15 +973,15 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
         // Points chosen by Slicer should be converted to proper ITK representation
         this->m_eyeFixed_lmks["VN4"][0] = -(this->m_eyeFixed_lmks["VN4"][0]);
         this->m_eyeFixed_lmks["VN4"][1] = -(this->m_eyeFixed_lmks["VN4"][1]);
-        CandidateVN4Point = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_eyeFixed_lmks["VN4"] ) );
+        msp_lmk_VN4_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_eyeFixed_lmks["VN4"] ) );
         }
       else
         {
-        CandidateVN4Point =
+        msp_lmk_VN4_Candidate =
           FindCandidatePoints( this->m_msp_img, mask_LR, searchRadiusLR,
                                1.6 * this->m_TemplateRadius["VN4"],
                                1.6 * this->m_TemplateRadius["VN4"],
-                               CandidateRPPoint.GetVectorFromOrigin() + RPtoVN4,
+                               msp_lmk_RP_Candidate.GetVectorFromOrigin() + RPtoVN4,
                                this->m_InputTemplateModel.GetTemplateMeans( "VN4" ),
                                this->m_InputTemplateModel.m_VectorIndexLocations["VN4"],
                                cc_VN4_Max, "VN4" );
@@ -1005,7 +1005,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       double cc_AC_Max = 0;
       if( this->m_msp_lmks.find( "AC" ) != this->m_msp_lmks.end() )
         {
-        CandidateACPoint = this->m_msp_lmks["AC"];
+        msp_lmk_AC_Candidate = this->m_msp_lmks["AC"];
         std::cout << "Skip estimation, directly load from file." << std::endl;
         }
       else if( hasUserForcedACPoint )
@@ -1014,15 +1014,15 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
         // Points chosen by Slicer should be converted to proper ITK representation
         this->m_eyeFixed_lmks["AC"][0] = -(this->m_eyeFixed_lmks["AC"][0]);
         this->m_eyeFixed_lmks["AC"][1] = -(this->m_eyeFixed_lmks["AC"][1]);
-        CandidateACPoint = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_eyeFixed_lmks["AC"] ) );
+        msp_lmk_AC_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_eyeFixed_lmks["AC"] ) );
         }
       else
         {
-        CandidateACPoint =
+        msp_lmk_AC_Candidate =
           FindCandidatePoints( this->m_msp_img, mask_LR, searchRadiusLR,
                                1.6 * this->m_TemplateRadius["AC"],
                                1.6 * this->m_TemplateRadius["AC"],
-                               CandidateRPPoint.GetVectorFromOrigin() + RPtoAC,
+                               msp_lmk_RP_Candidate.GetVectorFromOrigin() + RPtoAC,
                                this->m_InputTemplateModel.GetTemplateMeans( "AC" ),
                                this->m_InputTemplateModel.m_VectorIndexLocations["AC"],
                                cc_AC_Max, "AC" );
@@ -1046,7 +1046,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       double cc_PC_Max = 0;
       if( this->m_msp_lmks.find( "PC" ) != this->m_msp_lmks.end() )
         {
-        CandidatePCPoint = this->m_msp_lmks["PC"];
+        msp_lmk_PC_Candiate = this->m_msp_lmks["PC"];
         std::cout << "Skip estimation, directly load from file." << std::endl;
         }
       else if( hasUserForcedPCPoint )
@@ -1055,15 +1055,15 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
         // Points chosen by Slicer should be converted to proper ITK representation
         this->m_eyeFixed_lmks["PC"][0] = -(this->m_eyeFixed_lmks["PC"][0]);
         this->m_eyeFixed_lmks["PC"][1] = -(this->m_eyeFixed_lmks["PC"][1]);
-        CandidatePCPoint = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_eyeFixed_lmks["PC"] ) );
+        msp_lmk_PC_Candiate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_eyeFixed_lmks["PC"] ) );
         }
       else
         {
-        CandidatePCPoint =
+        msp_lmk_PC_Candiate =
           FindCandidatePoints( this->m_msp_img, mask_LR, searchRadiusLR,
                                4 * this->m_TemplateRadius["PC"],
                                4 * this->m_TemplateRadius["PC"],
-                               CandidateRPPoint.GetVectorFromOrigin() + RPtoPC,
+                               msp_lmk_RP_Candidate.GetVectorFromOrigin() + RPtoPC,
                                this->m_InputTemplateModel.GetTemplateMeans( "PC" ),
                                this->m_InputTemplateModel.m_VectorIndexLocations["PC"],
                                cc_PC_Max, "PC" );
@@ -1074,8 +1074,8 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
         {
         std::cout << cc_RP_Max << " " << cc_PC_Max << " " << cc_VN4_Max
                   << " " << cc_AC_Max << "\n"
-                  << CandidateRPPoint << " " << CandidatePCPoint << " " << CandidateVN4Point << " "
-                  << CandidateACPoint << std::endl;
+                  << msp_lmk_RP_Candidate << " " << msp_lmk_PC_Candiate << " " << msp_lmk_VN4_Candidate << " "
+                  << msp_lmk_AC_Candidate << std::endl;
         }
 
       if( globalImagedebugLevel > 1 )
@@ -1085,21 +1085,21 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
         MakeBrandeddebugImage( this->m_msp_img.GetPointer(),
                                this->m_InputTemplateModel,
                                this->m_msp_lmk_CenterOfHeadMass + this->m_InputTemplateModel.GetCMtoRPMean(),
-                               CandidateRPPoint + RPtoAC,
-                               CandidateRPPoint + RPtoPC,
-                               CandidateRPPoint + RPtoVN4,
+                               msp_lmk_RP_Candidate + RPtoAC,
+                               msp_lmk_RP_Candidate + RPtoPC,
+                               msp_lmk_RP_Candidate + RPtoVN4,
                                BrandedImageAName,
-                               CandidateRPPoint,
-                               CandidateACPoint,
-                               CandidatePCPoint,
-                               CandidateVN4Point
+                               msp_lmk_RP_Candidate,
+                               msp_lmk_AC_Candidate,
+                               msp_lmk_PC_Candiate,
+                               msp_lmk_VN4_Candidate
                                );
 
         if( globalImagedebugLevel > 3 )
           {
           std::string LabelImageAName( this->m_ResultsDir + "/MSP_Mask.nii.gz" );
-          MakeLabelImage( this->m_msp_img, CandidateRPPoint, CandidateACPoint,
-                          CandidatePCPoint, CandidateVN4Point, LabelImageAName );
+          MakeLabelImage( this->m_msp_img, msp_lmk_RP_Candidate, msp_lmk_AC_Candidate,
+                          msp_lmk_PC_Candiate, msp_lmk_VN4_Candidate, LabelImageAName );
           }
         }
 
@@ -1110,25 +1110,25 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       if( !hasUserForcedRPPoint )
         {
         this->m_eyeFixed_lmks["RP"] =
-          this->m_eyeFixed2msp_img_tfm->TransformPoint( CandidateRPPoint );
+          this->m_eyeFixed2msp_img_tfm->TransformPoint( msp_lmk_RP_Candidate );
         }
 
       if( !hasUserForcedVN4Point )
         {
         this->m_eyeFixed_lmks["VN4"] =
-          this->m_eyeFixed2msp_img_tfm->TransformPoint( CandidateVN4Point );
+          this->m_eyeFixed2msp_img_tfm->TransformPoint( msp_lmk_VN4_Candidate );
         }
 
       if( !hasUserForcedACPoint )
         {
         this->m_eyeFixed_lmks["AC"] =
-          this->m_eyeFixed2msp_img_tfm->TransformPoint( CandidateACPoint );
+          this->m_eyeFixed2msp_img_tfm->TransformPoint( msp_lmk_AC_Candidate );
         }
 
       if( !hasUserForcedPCPoint )
         {
         this->m_eyeFixed_lmks["PC"] =
-          this->m_eyeFixed2msp_img_tfm->TransformPoint( CandidatePCPoint );
+          this->m_eyeFixed2msp_img_tfm->TransformPoint( msp_lmk_PC_Candiate );
         }
 
       this->m_eyeFixed_lmks["CM"] =
@@ -1175,9 +1175,9 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
           {
           std::string ResampledMaskmageName
             ( this->m_ResultsDir + "/Resampled_Mask.nii.gz" );
-          MakeLabelImage( this->m_eyeFixed_img, CandidateRPPoint,
-                          CandidateACPoint, CandidatePCPoint,
-                          CandidateVN4Point, ResampledMaskmageName );
+          MakeLabelImage( this->m_eyeFixed_img, msp_lmk_RP_Candidate,
+                          msp_lmk_AC_Candidate, msp_lmk_PC_Candiate,
+                          msp_lmk_VN4_Candidate, ResampledMaskmageName );
 
           std::string OrigMaskImageName
             ( this->m_ResultsDir + "/Orig_Mask.nii.gz" );
@@ -1189,10 +1189,10 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
 
       // Save some named points in EMSP space mainly for debug use
         {
-        this->m_msp_lmks["AC"] = CandidateACPoint;
-        this->m_msp_lmks["PC"] = CandidatePCPoint;
-        this->m_msp_lmks["RP"] = CandidateRPPoint;
-        this->m_msp_lmks["VN4"] = CandidateVN4Point;
+        this->m_msp_lmks["AC"] = msp_lmk_AC_Candidate;
+        this->m_msp_lmks["PC"] = msp_lmk_PC_Candiate;
+        this->m_msp_lmks["RP"] = msp_lmk_RP_Candidate;
+        this->m_msp_lmks["VN4"] = msp_lmk_VN4_Candidate;
         this->m_msp_lmks["CM"] = this->m_msp_lmk_CenterOfHeadMass;
         // Eye centers in EMSP have been saved in a earlier time
         }

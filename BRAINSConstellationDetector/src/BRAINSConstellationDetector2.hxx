@@ -233,13 +233,13 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
 
   landmarksConstellationDetector myDetector;
     {
-    // a little abuse of the duplicator here
-    LandmarkIO::DuplicatorType::Pointer duplicator = LandmarkIO::DuplicatorType::New();
+    // a little abuse of the eyeFixed_img_duplicator here
+    LandmarkIO::DuplicatorType::Pointer eyeFixed_img_duplicator = LandmarkIO::DuplicatorType::New();
     // Use HoughEyeAlignedImage + HoughTransform as starting point.
-    duplicator->SetInputImage( this->GeteyeFixed_img().GetPointer() );
-    duplicator->Update();
+    eyeFixed_img_duplicator->SetInputImage( this->GeteyeFixed_img().GetPointer() );
+    eyeFixed_img_duplicator->Update();
     // The detector will use the output image after the Hough eye detector
-    myDetector.SeteyeFixed_img( duplicator->GetOutput() );
+    myDetector.SeteyeFixed_img( eyeFixed_img_duplicator->GetOutput() );
     }
 
 
