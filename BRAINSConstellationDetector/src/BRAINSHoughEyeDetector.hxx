@@ -183,7 +183,7 @@ BRAINSHoughEyeDetector<TInputImage, TOutputImage>
   this->m_NbOfThreads         = 64;
   this->m_SamplingRatio       = .2;
   this->m_HoughEyeDetectorMode = 1;   // for T1-weighted image
-  this->m_CenterOfHeadMass.Fill(-9999.87654321);
+  this->m_orig_lmk_CenterOfHeadMass.Fill(-9999.87654321);
 
   this->m_R1                  = 30;
   this->m_R2                  = 120;
@@ -245,7 +245,7 @@ BRAINSHoughEyeDetector<TInputImage, TOutputImage>
           image->TransformIndexToPhysicalPoint( It1.GetIndex(), currPt );
 
           // Center of head mass to current vector
-          const typename InputPointType::VectorType CMtoCurrVec = currPt - this->m_CenterOfHeadMass;
+          const typename InputPointType::VectorType CMtoCurrVec = currPt - this->m_orig_lmk_CenterOfHeadMass;
 
           // posterior/anterior component of the vector
           const float CMtoCurrPA = CMtoCurrVec * unitVectorAnterior;

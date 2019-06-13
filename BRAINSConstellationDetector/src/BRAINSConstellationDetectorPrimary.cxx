@@ -53,7 +53,7 @@ BRAINSConstellationDetectorPrimary::BRAINSConstellationDetectorPrimary()
   this->m_outputMRML = "";
   this->m_outputVerificationScript = "";
   this->m_outputUntransformedClippedVolume = "";
-  this->m_inputLandmarksEMSP = "";
+  this->orig_lmks_filename = "";
   this->m_writeBranded2DImage = "";
   this->m_backgroundFillValueString = "0";
   this->m_interpolationMode = "Linear";
@@ -88,8 +88,8 @@ BRAINSConstellationDetectorPrimary
   findCenterFilter->SetBackgroundValue( 0 );
   findCenterFilter->SetInput( img );
   findCenterFilter->Update();
-  const ImagePointType centerOfHeadMass = findCenterFilter->GetCenterOfBrain();
-  return centerOfHeadMass;
+  const ImagePointType orig_lmk_CenterOfHeadMass = findCenterFilter->GetCenterOfBrain();
+  return orig_lmk_CenterOfHeadMass;
 }
 
 bool BRAINSConstellationDetectorPrimary::Compute( void )
@@ -156,7 +156,7 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
    * Look for existing manually identified landmark point files adjacent
    * to the original image.
    */
-    if( this->m_inputLandmarksEMSP.empty() ) // Only look for default files if not specified on command line.
+    if( this->orig_lmks_filename.empty() ) // Only look for default files if not specified on command line.
     {
       const static std::string fcsv_extension{".fcsv"};
       const std::string root_dir = itksys::SystemTools::GetParentDirectory(this->m_inputVolume);
@@ -178,7 +178,7 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
                   <<         "\n         "
                   << potentialLandmarkFileName
                   << std::endl;
-        this->m_inputLandmarksEMSP = potentialLandmarkFileName;
+        this->orig_lmks_filename = potentialLandmarkFileName;
       }
       else
       {
@@ -198,19 +198,12 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
           {
             directoryName = ".";
           }
-          this->m_inputLandmarksEMSP = directoryName + "/" + ImageMetaDataEMSPFileOverride;
+          this->orig_lmks_filename = directoryName + "/" + ImageMetaDataEMSPFileOverride;
 
-          std::cout << "STATUS:  Found meta-data for EMSP override with value: " << this->m_inputLandmarksEMSP << std::endl;
+          std::cout << "STATUS:  Found meta-data for EMSP override with value: " << this->orig_lmks_filename << std::endl;
         }
       }
       std::cerr << "\n\n\n\n\n";
-    }
-
-  // load corresponding landmarks in EMSP aligned space from file if possible
-  LandmarksMapType orig_lmks;
-  if( ! this->m_inputLandmarksEMSP.empty() )
-    {
-    orig_lmks = ReadSlicer3toITKLmk( this->m_inputLandmarksEMSP );
     }
 
 
@@ -224,14 +217,20 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
  
   LandmarksMapType eyeFixed_lmks;
   ImageType::Pointer eyeFixed_img = nullptr;
-  
+
+  // load corresponding landmarks in EMSP aligned space from file if possible
+  const LandmarksMapType constant_orig_lmks =
+    ( ! this->orig_lmks_filename.empty() )
+    ? ReadSlicer3toITKLmk( this->orig_lmks_filename )
+    : LandmarksMapType{};
   bool hasBothEyeLandmarksDefinedInOrigSpace = false;
-  if( ( orig_lmks.find( "LE" ) != orig_lmks.end() )
-    && ( orig_lmks.find( "RE" ) != orig_lmks.end() ) )
+  if( ( constant_orig_lmks.find( "LE" ) != constant_orig_lmks.end() )
+    && ( constant_orig_lmks.find( "RE" ) != constant_orig_lmks.end() ) )
     {
       hasBothEyeLandmarksDefinedInOrigSpace = true;
     }
 
+  LandmarksMapType orig_lmks = constant_orig_lmks;
   if( hasBothEyeLandmarksDefinedInOrigSpace )
     {
     std::cout << "\nLoaded eye centers information for BRAINS Hough Eye Detector." << std::endl;
@@ -264,9 +263,11 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
     houghEyeDetector->SetResultsDir( this->m_resultsDir );           // debug output dir
     houghEyeDetector->SetWritedebuggingImagesLevel( this->m_writedebuggingImagesLevel );
 
-    orig_lmks["CM"]  = localFindCenterHeadFunc(orig_img);
-    houghEyeDetector->SetCenterOfHeadMass( orig_lmks.at("CM") );
-
+    if ( orig_lmks.find("CM") == orig_lmks.end() ) // no CM prescribed
+      {
+        orig_lmks["CM"]  = localFindCenterHeadFunc(orig_img);
+      }
+    houghEyeDetector->Setorig_lmk_CenterOfHeadMass( orig_lmks.at("CM") );
     try
       {
       houghEyeDetector->Update();
@@ -298,9 +299,9 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
   itk::BRAINSConstellationDetector2<ImageType, ImageType>::Pointer constellation2 = itk::BRAINSConstellationDetector2<ImageType, ImageType>::New();
 
 // HACK Try to put this back in
-//  if( !orig_lmks.empty() )
+//  if( !constant_orig_lmks.empty() )
 //    {
-//      constellation2->Setmsp_lmks( orig_lmks );
+//      constellation2->Setmsp_lmks( constant_orig_lmks );
 //    }
 
   constellation2->Setorig_lmk_LE( orig_lmks.at("LE") );
@@ -313,7 +314,7 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
 #endif
 
 
-  constellation2->SetHoughEyeTransform( orig2eyeFixed_img_tfm );
+  constellation2->Setorig2eyeFixed_img_tfm( orig2eyeFixed_img_tfm );
   constellation2->SetInput( eyeFixed_img );
 
 

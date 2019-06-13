@@ -58,11 +58,12 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
   this->m_InterpolationMode = "Linear";
 
   this->m_OriginalInputImage = nullptr;
-  this->m_HoughEyeTransform = nullptr;
+  this->m_orig2eyeFixed_img_tfm = nullptr;
 
   this->m_orig_lmk_LE.Fill(-123.0);
   this->m_orig_lmk_RE.Fill(-123.0);
   this->m_eyeFixed_lmk_CenterOfHeadMass.Fill(-12345.0);
+  this->m_orig_lmk_CenterOfHeadMass.Fill(-12345.0);
 
   m_msp_lmks.clear();
   m_HoughEyeFailure=false;
@@ -235,20 +236,12 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
     // a little abuse of the duplicator here
     LandmarkIO::DuplicatorType::Pointer duplicator = LandmarkIO::DuplicatorType::New();
     // Use HoughEyeAlignedImage + HoughTransform as starting point.
-    duplicator->SetInputImage( this->GetHoughEyeAlignedImage().GetPointer() );
+    duplicator->SetInputImage( this->GeteyeFixed_img().GetPointer() );
     duplicator->Update();
     // The detector will use the output image after the Hough eye detector
     myDetector.SeteyeFixed_img( duplicator->GetOutput() );
-    myDetector.SetHoughEyeFailure( this->m_HoughEyeFailure );
     }
-    {
-    // The detector also needs the original input if it has to fix a bad estimation of the MSP
-    //HACK: TODO:  Why duplicate?  This seems crazy
-    LandmarkIO::DuplicatorType::Pointer duplicator2 = LandmarkIO::DuplicatorType::New();
-    duplicator2->SetInputImage( this->m_CleanedIntensityOriginalInputImage );
-    duplicator2->Update();
-    myDetector.Setorig_img( duplicator2->GetOutput() );
-    }
+
 
   myDetector.SetInputTemplateModel( myModel );
   myDetector.SetLlsMatrices( this->m_LlsMatrices );
@@ -257,7 +250,7 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
   myDetector.SetResultsDir( this->m_ResultsDir );
   myDetector.SetTemplateRadius( myModel.GetRadii() );
   myDetector.SetMSPQualityLevel( this->m_MspQualityLevel );
-  myDetector.Setorig_lmk_CenterOfHeadMass( this->m_eyeFixed_lmk_CenterOfHeadMass );
+  myDetector.SeteyeFixed_lmk_CenterOfHeadMass( this->m_eyeFixed_lmk_CenterOfHeadMass );
   myDetector.SetHoughEyeFailure( this->m_HoughEyeFailure );
 
   LandmarksMapType msp_lmks = this->Getmsp_lmks();
@@ -269,7 +262,7 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
   if( ( this->m_msp_lmks.find("LE") == this->m_msp_lmks.end() )
       || ( this->m_msp_lmks.find("RE") == this->m_msp_lmks.end() ) )
     {
-      myDetector.Setorig2eyeFixed_img_tfm( this->m_HoughEyeTransform );
+      myDetector.Setorig2eyeFixed_img_tfm( this->m_orig2eyeFixed_img_tfm );
     myDetector.Setorig_lmk_LE( this->m_orig_lmk_LE );
     myDetector.Setorig_lmk_RE( this->m_orig_lmk_RE );
     }
@@ -317,7 +310,7 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
   myDetector.SetatlasLandmarks( this->GetatlasLandmarks() );
   myDetector.SetatlasLandmarkWeights( this->GetatlasLandmarkWeights() );
 
-  myDetector.Compute();
+  myDetector.Compute(this->m_CleanedIntensityOriginalInputImage);
   this->m_OrigToACPCVersorTransform = myDetector.GetImageOrigToACPCVersorTransform();
 
   if( LMC::globalverboseFlag )
@@ -343,10 +336,19 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
     std::cout << "itkRigid3DTransform: \n" <<  this->m_OrigToACPCVersorTransform << std::endl;
     }
 
+//  {
+//    // The detector also needs the original input if it has to fix a bad estimation of the MSP
+//    //HACK: TODO:  Why duplicate?  This seems crazy
+//    LandmarkIO::DuplicatorType::Pointer duplicator2 = LandmarkIO::DuplicatorType::New();
+//    duplicator2->SetInputImage( this->m_CleanedIntensityOriginalInputImage );
+//    duplicator2->Update();
+//    myDetector.Setorig_img( duplicator2->GetOutput() );
+//  }
+
   itk::PrepareOutputImages(this->m_OutputResampledImage,
     this->m_OutputImage,
     this->m_OutputUntransformedClippedVolume,
-                            myDetector.Getorig_img().GetPointer(), //Input RO
+                           this->m_CleanedIntensityOriginalInputImage.GetPointer(), //Input RO
     this->m_OrigToACPCVersorTransform.GetPointer(), //Input RO
     this->m_AcLowerBound, //Input RO
     BackgroundFillValue, //Input RO
@@ -358,7 +360,7 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
 
   if( globalImagedebugLevel > 3 )
     {
-    SImageType::Pointer TaggedOriginalImage = myDetector.GetTaggedImage();
+    SImageType::Pointer TaggedOriginalImage = myDetector.GetTaggedImage(this->m_CleanedIntensityOriginalInputImage);
     itkUtil::WriteImage<SImageType>(TaggedOriginalImage, this->m_ResultsDir + "/TAGGED_POINTS.nii.gz");
       {
       SImageType::Pointer isoTaggedImage =
@@ -375,7 +377,7 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
       itkUtil::WriteImage<SImageType>(VersorisoTaggedImage, this->m_ResultsDir + "/Versor_ISO_Lmk_MSP.nii.gz");
       }
       {
-      RigidTransformType::Pointer OrigSpaceCenterOfGravityCentered = myDetector.GeteyeFixed2msp_lmk_tfm();
+      RigidTransformType::Pointer OrigSpaceCenterOfGravityCentered = myDetector.GeteyeFixed2msp_img_tfm();
       SImageType::Pointer         RigidMSPImage =
         TransformResample<SImageType, SImageType>(
           TaggedOriginalImage.GetPointer(), MakeIsoTropicReferenceImage().GetPointer(), BackgroundFillValue,

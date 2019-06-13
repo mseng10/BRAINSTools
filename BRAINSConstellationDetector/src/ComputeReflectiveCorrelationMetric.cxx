@@ -105,13 +105,13 @@ int main( int argc, char * argv[] ) {
   findCenterFilter->SetHeadSizeLimit(700);
   findCenterFilter->SetBackgroundValue(0);
   findCenterFilter->Update();
-  SImagePointType centerOfHeadMass = findCenterFilter->GetCenterOfBrain();
+  SImagePointType orig_lmk_CenterOfHeadMass = findCenterFilter->GetCenterOfBrain();
 
   using ReflectionFunctorType = Rigid3DCenterReflectorFunctor< itk::PowellOptimizerv4<double> >;
   using ParametersType = ReflectionFunctorType::ParametersType;
 
   ReflectionFunctorType::Pointer reflectionFunctor = ReflectionFunctorType::New();
-  reflectionFunctor->SetCenterOfHeadMass(centerOfHeadMass);
+  reflectionFunctor->Setorig_lmk_CenterOfHeadMass(orig_lmk_CenterOfHeadMass);
   reflectionFunctor->InitializeImage(originalImage); // initialize image is set to be original
                                                      // high resolution image for consistency
                                                      // with BCD behaviour
@@ -186,7 +186,7 @@ int main( int argc, char * argv[] ) {
   //
   std::cout << "\nFind optimized parameters set by running Powell optimizer..." << std::endl;
   ReflectionFunctorType::Pointer reflectionFunctor2 = ReflectionFunctorType::New();
-  reflectionFunctor2->SetCenterOfHeadMass(centerOfHeadMass);
+  reflectionFunctor2->Setorig_lmk_CenterOfHeadMass(orig_lmk_CenterOfHeadMass);
   reflectionFunctor2->InitializeImage(originalImage);
   reflectionFunctor2->SetDownSampledReferenceImage(inputImage);
   reflectionFunctor2->Initialize();

@@ -188,12 +188,12 @@ extern SImageType::PointType::VectorType initialAC(const SImageType::PointType &
 
 //RM extern void InitializeRandomZeroOneDouble(RandomGeneratorType::IntegerType rseed);
 
-extern void ComputeMSP(SImageType::Pointer image, RigidTransformType::Pointer & Tmsp,
-                       SImageType::Pointer & transformedImage, const SImageType::PointType & centerOfHeadMass,
+extern void ComputeMSP(SImageType::Pointer image, RigidTransformType::Pointer & eyeFixed2msp_lmk_tfm,
+                       SImageType::Pointer & transformedImage, const SImageType::PointType & orig_lmk_CenterOfHeadMass,
                        const int qualityLevel, double & cc);
 
-extern void ComputeMSP_Easy(SImageType::Pointer image, RigidTransformType::Pointer & Tmsp,
-                            const SImageType::PointType & centerOfHeadMass, const int qualityLevel);
+extern void ComputeMSP_Easy(SImageType::Pointer image, RigidTransformType::Pointer & eyeFixed2msp_lmk_tfm,
+                            const SImageType::PointType & orig_lmk_CenterOfHeadMass, const int qualityLevel);
 
 extern SImageType::Pointer CreatedebugPlaneImage(SImageType::Pointer referenceImage,
                                                  const RigidTransformType::Pointer MSPTransform,

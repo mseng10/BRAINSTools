@@ -47,7 +47,7 @@ using reflectionFunctorType = Rigid3DCenterReflectorFunctor< itk::PowellOptimize
 using GaussianFilterType = itk::RecursiveGaussianImageFilter<SImageType, SImageType>;
 
 void DoMultiQualityReflection(SImageType::Pointer &image,
-                              RigidTransformType::Pointer &Tmsp,
+                              RigidTransformType::Pointer &eyeFixed2msp_lmk_tfm,
                               const int qualityLevel,
                               const reflectionFunctorType::Pointer &reflectionFunctor)
 {
@@ -85,21 +85,21 @@ void DoMultiQualityReflection(SImageType::Pointer &image,
       reflectionFunctor->Update();
       }
   reflectionFunctor->SetDownSampledReferenceImage(image);
-  Tmsp = reflectionFunctor->GetTransformToMSP();
+  eyeFixed2msp_lmk_tfm = reflectionFunctor->GetTransformToMSP();
 }
 
 void ComputeMSP(SImageType::Pointer image,
-                RigidTransformType::Pointer & Tmsp,
+                RigidTransformType::Pointer & eyeFixed2msp_lmk_tfm,
                 SImageType::Pointer & transformedImage,
-                const SImageType::PointType & centerOfHeadMass,
+                const SImageType::PointType & orig_lmk_CenterOfHeadMass,
                 const int qualityLevel,
                 double & cc)
 {
   if( qualityLevel == -1 )  // Assume image was pre-aligned outside of the
                             // program
     {
-    Tmsp = RigidTransformType::New();
-    Tmsp->SetIdentity();
+    eyeFixed2msp_lmk_tfm = RigidTransformType::New();
+    eyeFixed2msp_lmk_tfm->SetIdentity();
 
     itk::ImageDuplicator<SImageType>::Pointer MSP = itk::ImageDuplicator<SImageType>::New();
     MSP->SetInputImage(image);
@@ -109,9 +109,9 @@ void ComputeMSP(SImageType::Pointer image,
   else
     {
     reflectionFunctorType::Pointer reflectionFunctor = reflectionFunctorType::New();
-    reflectionFunctor->SetCenterOfHeadMass(centerOfHeadMass);
+    reflectionFunctor->Setorig_lmk_CenterOfHeadMass(orig_lmk_CenterOfHeadMass);
 
-    DoMultiQualityReflection(image, Tmsp, qualityLevel, reflectionFunctor);
+    DoMultiQualityReflection(image, eyeFixed2msp_lmk_tfm, qualityLevel, reflectionFunctor);
 
     transformedImage = reflectionFunctor->GetMSPCenteredImage();
     cc = reflectionFunctor->GetCC();
@@ -119,13 +119,13 @@ void ComputeMSP(SImageType::Pointer image,
 }
 
 void ComputeMSP_Easy(SImageType::Pointer image,
-                     RigidTransformType::Pointer & Tmsp,
-                     const SImageType::PointType & centerOfHeadMass,
+                     RigidTransformType::Pointer & eyeFixed2msp_lmk_tfm,
+                     const SImageType::PointType & orig_lmk_CenterOfHeadMass,
                      const int qualityLevel)
 {
   reflectionFunctorType::Pointer reflectionFunctor = reflectionFunctorType::New();
-  reflectionFunctor->SetCenterOfHeadMass(centerOfHeadMass);
-  DoMultiQualityReflection(image, Tmsp, qualityLevel, reflectionFunctor);
+  reflectionFunctor->Setorig_lmk_CenterOfHeadMass(orig_lmk_CenterOfHeadMass);
+  DoMultiQualityReflection(image, eyeFixed2msp_lmk_tfm, qualityLevel, reflectionFunctor);
 }
 
 void CreatedebugPlaneImage(SImageType::Pointer referenceImage, const std::string & debugfilename)

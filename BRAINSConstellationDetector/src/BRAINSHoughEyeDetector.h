@@ -139,7 +139,7 @@ public:
   itkSetMacro(HoughEyeDetectorMode, int);
 
   /** Set the center of head mass of the image */
-  itkSetMacro(CenterOfHeadMass, InputPointType);
+  itkSetMacro(orig_lmk_CenterOfHeadMass, InputPointType);
 
   /** Set the interior radius of the shell-like RoI */
   itkSetMacro(R1, double);
@@ -219,7 +219,7 @@ protected:
   unsigned int   m_NbOfThreads;
   double         m_SamplingRatio;
   int            m_HoughEyeDetectorMode;
-  InputPointType m_CenterOfHeadMass;
+  InputPointType m_orig_lmk_CenterOfHeadMass;
 
   // Interior radius (mm), exterior radius (mm), and spread
   // angle (rad) of the shell-like RoI.

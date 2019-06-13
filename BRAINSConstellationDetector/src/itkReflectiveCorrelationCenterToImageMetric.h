@@ -578,9 +578,9 @@ public:
   itkSetMacro(DoPowell,bool);
   itkGetConstMacro(DoPowell,bool);
 
-  void SetCenterOfHeadMass(const SImageType::PointType & centerOfHeadMass)
+  void Setorig_lmk_CenterOfHeadMass(const SImageType::PointType & orig_lmk_CenterOfHeadMass)
   {
-    this->m_CenterOfHeadMass = centerOfHeadMass;
+    this->m_CenterOfHeadMass = orig_lmk_CenterOfHeadMass;
     this->m_CenterOfHeadMassIsSet = true;
   }
 

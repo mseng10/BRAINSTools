@@ -223,7 +223,7 @@ public:
 
   void SetInputLandmarksEMSP(std::string inputLandmarksEMSP)
   {
-    this->m_inputLandmarksEMSP = inputLandmarksEMSP;
+    this->orig_lmks_filename = inputLandmarksEMSP;
   }
 
   void SetWriteBranded2DImage(std::string writeBranded2DImage)
@@ -316,7 +316,7 @@ private:
   std::string m_outputMRML;
   std::string m_outputVerificationScript;
   std::string m_outputUntransformedClippedVolume;
-  std::string m_inputLandmarksEMSP;
+  std::string orig_lmks_filename;
   std::string m_writeBranded2DImage;
   std::string m_backgroundFillValueString;
   std::string m_interpolationMode;

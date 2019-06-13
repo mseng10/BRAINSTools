@@ -83,14 +83,14 @@ int main(int argc, char *argv[])
   findCenterFilter->SetHeadSizeLimit(700);
   findCenterFilter->SetBackgroundValue(0);
   findCenterFilter->Update();
-  ImagePointType centerOfHeadMass = findCenterFilter->GetCenterOfBrain();
+  ImagePointType orig_lmk_CenterOfHeadMass = findCenterFilter->GetCenterOfBrain();
 
   // Find eye centers with BRAINS Hough Eye Detector
   std::cout << "Finding eye centers..." << std::endl;
   HoughEyeDetectorType::Pointer houghEyeDetector = HoughEyeDetectorType::New();
   houghEyeDetector->SetInput( reader->GetOutput() );
   houghEyeDetector->SetHoughEyeDetectorMode(1); // For T1 images
-  houghEyeDetector->SetCenterOfHeadMass(centerOfHeadMass);
+  houghEyeDetector->Setorig_lmk_CenterOfHeadMass(orig_lmk_CenterOfHeadMass);
   houghEyeDetector->SetResultsDir(debugDir);           // debug image write dir
   houghEyeDetector->SetWritedebuggingImagesLevel(2);   // write ROI and
                                                        // accumulator images
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
   std::cout << "Left eye = " << leftEye << std::endl;
   std::cout << "Right eye = " << rightEye << std::endl;
   std::cout << "Aligned left eye = " << alignedLE << std::endl;
-  std::cout << "Alinged right eye = " << alignedRE << std::endl;
+  std::cout << "Aligned right eye = " << alignedRE << std::endl;
 
   // Write aligned image
   WriterType::Pointer writer = WriterType::New();

@@ -72,12 +72,12 @@ public:
   // Force the setting of the point values to override those that were specified.
   void Setorig_lmks_NamedPoint( const std::string& NamedPoint, const SImageType::PointType& PointValue)
   {
-    this->m_orig_lmks[NamedPoint] = PointValue;
+    this->m_eyeFixed_lmks[NamedPoint] = PointValue;
   }
 
   const LandmarksMapType & Getorig_lmks( ) const
   {
-    return this->m_orig_lmks;
+    return this->m_eyeFixed_lmks;
   }
 
   void SetMSPQualityLevel(const int newLevel)
@@ -95,15 +95,15 @@ public:
     m_eyeFixed_img = image;  // This input is the output of Hough Eye detector
   }
 
-  void Setorig_img( SImageType::Pointer image)
-  {
-    m_orig_img = image; // This is the original input of BCD
-  }
-
-  SImageType::Pointer Getorig_img() const
-  {
-    return this->m_orig_img; // Returns the original input of BCD
-  }
+//  void Setorig_img( SImageType::Pointer image)
+//  {
+//    m_orig_img = image; // This is the original input of BCD
+//  }
+//
+//  SImageType::Pointer Getorig_img() const
+//  {
+//    return this->m_orig_img; // Returns the original input of BCD
+//  }
 
   void SetInputTemplateModel(landmarksConstellationModelIO & myModel)
   {
@@ -120,12 +120,12 @@ public:
     return m_InputTemplateModel.GetRadius(PointName);
   }
 
-  RigidTransformType::Pointer GeteyeFixed2msp_lmk_tfm() const
+  RigidTransformType::Pointer GeteyeFixed2msp_img_tfm() const
   {
     RigidTransformType::Pointer value = RigidTransformType::New();
 
-    value->SetFixedParameters( this->m_eyeFixed2msp_lmk_tfm->GetFixedParameters() );
-    value->SetParameters( this->m_eyeFixed2msp_lmk_tfm->GetParameters() );
+    value->SetFixedParameters( this->m_eyeFixed2msp_img_tfm->GetFixedParameters() );
+    value->SetParameters( this->m_eyeFixed2msp_img_tfm->GetParameters() );
     return value;
   }
 
@@ -139,7 +139,7 @@ public:
     this->m_ResultsDir = resultsDir;
   }
 
-  void Setorig2eyeFixed_img_tfm( VersorTransformType::Pointer houghEyeTransform)
+  void Setorig2eyeFixed_img_tfm( const VersorTransformType::Pointer  houghEyeTransform)
   {
     this->m_orig2eyeFixed_img_tfm = houghEyeTransform;
   }
@@ -169,9 +169,14 @@ public:
 //    return this->m_orig_lmk_RE;
 //  }
 
-  void Setorig_lmk_CenterOfHeadMass( const SImageType::PointType& centerOfHeadMass)
+  void SeteyeFixed_lmk_CenterOfHeadMass( const SImageType::PointType& eyeFixed_lmk_CenterOfHeadMass)
   {
-    m_orig_lmk_CenterOfHeadMass = centerOfHeadMass;
+    m_eyeFixed_lmk_CenterOfHeadMass = eyeFixed_lmk_CenterOfHeadMass;
+  }
+
+  void Setorig_lmk_CenterOfHeadMass( const SImageType::PointType& orig_lmk_CenterOfHeadMass)
+  {
+    m_orig_lmk_CenterOfHeadMass = orig_lmk_CenterOfHeadMass;
   }
 
   void SetLlsMeans(std::map<std::string, std::vector<double> > & llsMeans)
@@ -196,13 +201,13 @@ public:
     m_msp_lmks.insert( landmarks.begin(), landmarks.end() );
   }
 
-  void Compute();
+  void Compute(SImageType::Pointer original_space_image );
 
-  SImageType::Pointer GetTaggedImage() const
+  SImageType::Pointer GetTaggedImage( SImageType::Pointer original_space_image ) const
   {
     itk::ImageDuplicator<SImageType>::Pointer duplicator = itk::ImageDuplicator<SImageType>::New();
 
-    duplicator->SetInputImage( this->Getorig_img());
+    duplicator->SetInputImage( original_space_image );
     SImageType::Pointer taggedImage = duplicator->GetOutput();
 
     SImageType::PixelType low=0;
@@ -234,8 +239,8 @@ public:
     this->m_atlasLandmarkWeights = atlasLandmarkWeights;
     }
 
-  VersorTransformType::Pointer GetImageOrigToACPCVersorTransform(void) const;
-  void ComputeFinalRefinedACPCAlignedTransform(void);
+  VersorTransformType::Pointer GetImageOrigToACPCVersorTransform() const;
+  void ComputeFinalRefinedACPCAlignedTransform(SImageType::Pointer orig_space_img);
 protected:
 
 private:
@@ -281,14 +286,14 @@ private:
   SImageType::PointType         m_msp_lmk_CenterOfHeadMass;
   //SImageType::PointType         m_BestCenter;
   SImageType::Pointer           m_eyeFixed_img;
-  SImageType::Pointer           m_orig_img;
+//  SImageType::Pointer           m_orig_img;
   SImageType::Pointer           m_msp_img;
   landmarksConstellationModelIO m_InputTemplateModel;
   ValMapType                    m_TemplateRadius;
   int                           m_mspQualityLevel;
   std::string                   m_ResultsDir;
 
-  LandmarksMapType m_orig_lmks;             // named points in the
+  LandmarksMapType m_eyeFixed_lmks;             // named points in the
                                                   // original space
                                                   // even before the Hough eye
                                                   // detector
@@ -300,7 +305,7 @@ private:
                                                   // should be treated as
                                                   // midline landmarks
 
-  RigidTransformType::Pointer  m_eyeFixed2msp_lmk_tfm;
+  RigidTransformType::Pointer  m_eyeFixed2msp_img_tfm;
   VersorTransformType::Pointer m_ImageOrigToACPCVersorTransform;
 
   // Wei: Read in LE, RE value for linear model estimation
@@ -311,6 +316,7 @@ private:
 
   //SImageType::PointType m_ReferencePointAC;
   //SImageType::PointType m_ReferencePointPC;
+  SImageType::PointType m_eyeFixed_lmk_CenterOfHeadMass;
   SImageType::PointType m_orig_lmk_CenterOfHeadMass;
 
   // Store linear model parameters

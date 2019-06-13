@@ -153,7 +153,7 @@ public:
   itkSetMacro(InterpolationMode, std::string);
 
   /** Set Hough eye transform */
-  itkSetObjectMacro(HoughEyeTransform, VersorTransformType);
+  itkSetObjectMacro( orig2eyeFixed_img_tfm, VersorTransformType);
 
   /** Set LE point */
   itkSetMacro(orig_lmk_LE, SImagePointType);
@@ -163,13 +163,14 @@ public:
 
   /** Set center of head mass **/
   itkSetMacro(eyeFixed_lmk_CenterOfHeadMass, SImagePointType);
+  itkSetMacro(orig_lmk_CenterOfHeadMass, SImagePointType);
 
   /** Set the original input image before the Hough eye detector */
   itkSetObjectMacro(OriginalInputImage, SImageType);
   itkGetConstObjectMacro(OriginalInputImage, SImageType);
 
   /** GetHoughEyeAlignedImage */
-  SImageType::ConstPointer GetHoughEyeAlignedImage() const
+  SImageType::ConstPointer GeteyeFixed_img() const
     {
     SImageType::ConstPointer internalImage = this->GetInput(0);
     return internalImage;
@@ -197,7 +198,7 @@ public:
   itkGetConstObjectMacro(CleanedIntensityOriginalInputImage, SImageType);
 
   /** Get the Hough eye transform */
-  itkGetModifiableObjectMacro(HoughEyeTransform, VersorTransformType);
+  itkGetModifiableObjectMacro(orig2eyeFixed_img_tfm, VersorTransformType);
 
   /** Set the Hough eye failure report */
   void SetHoughEyeFailure(const bool failure)
@@ -316,7 +317,7 @@ protected:
   // Note: this->GetInput() will return a const input after Hough eye.
   SImageType::Pointer m_OriginalInputImage;
 
-  VersorTransformType::Pointer m_HoughEyeTransform; // help to get the points
+  VersorTransformType::Pointer m_orig2eyeFixed_img_tfm; // help to get the points
                                                     // location in the original
                                                     // space
   SImagePointType m_orig_lmk_LE;                        // automated estimated LE in
@@ -324,6 +325,7 @@ protected:
                                                     // Hough eye detector
   SImagePointType  m_orig_lmk_RE;
   SImagePointType  m_eyeFixed_lmk_CenterOfHeadMass;
+  SImagePointType  m_orig_lmk_CenterOfHeadMass;
   LandmarksMapType m_msp_lmks;
   bool             m_HoughEyeFailure;
 
