@@ -126,8 +126,8 @@ landmarksConstellationDetector::ComputeFinalRefinedACPCAlignedTransform( SImageT
   for( LandmarkConstIterator fixedIt = referenceAtlasLandmarks.begin(); fixedIt != referenceAtlasLandmarks.end();
     ++fixedIt )
     {
-    LandmarkConstIterator movingIt = this->m_orig_lmks.find( fixedIt->first );
-    if( movingIt != this->m_orig_lmks.end() )
+    LandmarkConstIterator movingIt = this->m_orig_lmks_constant.find( fixedIt->first );
+    if( movingIt != this->m_orig_lmks_constant.end() )
       {
       atlasLmks.push_back( fixedIt->second);
       movingLmks.push_back( movingIt->second);
@@ -260,7 +260,7 @@ landmarksConstellationDetector::ComputeFinalRefinedACPCAlignedTransform( SImageT
     using VersorRigid3DTransformType = itk::VersorRigid3DTransform<double>;
     VersorTransformType::Pointer LandmarkOrigToACPCTransform = GetLandmarkTransformFromImageTransform( this->m_orig2msp_img_tfm.GetPointer()  );
 
-    const VersorRigid3DTransformType::OutputPointType acPointInACPCSpace = LandmarkOrigToACPCTransform->TransformPoint(GetNamedPointFromLandmarkList(this->m_orig_lmks,"AC"));
+    const VersorRigid3DTransformType::OutputPointType acPointInACPCSpace = LandmarkOrigToACPCTransform->TransformPoint(GetNamedPointFromLandmarkList(this->m_orig_lmks_constant,"AC"));
     //std::cout << "HACK: PRE-FIXING" << acPointInACPCSpace << std::endl;
       {
       VersorRigid3DTransformType::OffsetType translation;
@@ -272,7 +272,7 @@ landmarksConstellationDetector::ComputeFinalRefinedACPCAlignedTransform( SImageT
       }
 
     //LandmarkOrigToACPCTransform = GetLandmarkTransformFromImageTransform( this->m_orig2msp_img_tfm.GetPointer()  );
-    //VersorRigid3DTransformType::OutputPointType newacPointInACPCSpace = LandmarkOrigToACPCTransform->TransformPoint(GetNamedPointFromLandmarkList(this->m_orig_lmks,"AC"));
+    //VersorRigid3DTransformType::OutputPointType newacPointInACPCSpace = LandmarkOrigToACPCTransform->TransformPoint(GetNamedPointFromLandmarkList(this->m_orig_lmks_constant,"AC"));
     //std::cout << "HACK: POST-FIXING" << newacPointInACPCSpace << std::endl;
     //TODO:  This still does not put it to (0,0,0) and it should.
     }
@@ -668,22 +668,22 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
     hasUserSpecEyeCenterInfo = false;
     }
 
-  if( this->m_orig_lmks.find("RP") == this->m_orig_lmks.end() )
+  if( this->m_orig_lmks_constant.find("RP") == this->m_orig_lmks_constant.end() )
     {
     hasUserForcedRPPoint = false;
     }
 
-  if( this->m_orig_lmks.find("AC") == this->m_orig_lmks.end() )
+  if( this->m_orig_lmks_constant.find("AC") == this->m_orig_lmks_constant.end() )
     {
     hasUserForcedACPoint = false;
     }
 
-  if( this->m_orig_lmks.find("PC") == this->m_orig_lmks.end() )
+  if( this->m_orig_lmks_constant.find("PC") == this->m_orig_lmks_constant.end() )
     {
     hasUserForcedPCPoint = false;
     }
 
-  if( this->m_orig_lmks.find("VN4") == this->m_orig_lmks.end() )
+  if( this->m_orig_lmks_constant.find("VN4") == this->m_orig_lmks_constant.end() )
     {
     hasUserForcedVN4Point = false;
     }
@@ -888,7 +888,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       else if( hasUserForcedRPPoint )
         {
         std::cout << "Skip estimation, directly forced by command line." << std::endl;
-        msp_lmk_RP_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks["RP"] ) );
+        msp_lmk_RP_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("RP") ) );
         }
       else
         {
@@ -963,7 +963,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       else if( hasUserForcedVN4Point )
         {
         std::cout << "Skip estimation, directly forced by command line." << std::endl;
-        msp_lmk_VN4_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks["VN4"] ) );
+        msp_lmk_VN4_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("VN4") ) );
         }
       else
         {
@@ -1001,7 +1001,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       else if( hasUserForcedACPoint )
         {
         std::cout << "Skip estimation, directly forced by command line." << std::endl;
-        msp_lmk_AC_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks["AC"] ) );
+        msp_lmk_AC_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("AC") ) );
         }
       else
         {
@@ -1039,7 +1039,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       else if( hasUserForcedPCPoint )
         {
         std::cout << "Skip estimation, directly forced by command line." << std::endl;
-        msp_lmk_PC_Candiate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks["PC"] ) );
+        msp_lmk_PC_Candiate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("PC") ) );
         }
       else
         {
@@ -1093,60 +1093,60 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       // Save named points in original space
       if( !hasUserForcedRPPoint )
         {
-        this->m_orig_lmks["RP"] =
+        this->m_orig_lmks_constant["RP"] =
           this->m_test_orig2msp_img_tfm->TransformPoint( msp_lmk_RP_Candidate );
         }
 
       if( !hasUserForcedVN4Point )
         {
-        this->m_orig_lmks["VN4"] =
+        this->m_orig_lmks_constant["VN4"] =
           this->m_test_orig2msp_img_tfm->TransformPoint( msp_lmk_VN4_Candidate );
         }
 
       if( !hasUserForcedACPoint )
         {
-        this->m_orig_lmks["AC"] =
+        this->m_orig_lmks_constant["AC"] =
           this->m_test_orig2msp_img_tfm->TransformPoint( msp_lmk_AC_Candidate );
         }
 
       if( !hasUserForcedPCPoint )
         {
-        this->m_orig_lmks["PC"] =
+        this->m_orig_lmks_constant["PC"] =
           this->m_test_orig2msp_img_tfm->TransformPoint( msp_lmk_PC_Candiate );
         }
 
-      this->m_orig_lmks["CM"] =
+      this->m_orig_lmks_constant["CM"] =
         this->m_test_orig2msp_img_tfm->TransformPoint( this->m_msp_lmk_CenterOfHeadMass );
 
       if( !hasUserSpecEyeCenterInfo )
         {
-        LandmarksMapType & orig_lmks = m_orig_lmks; //BUG: Something is amiss here
+        LandmarksMapType & orig_lmks = m_orig_lmks_constant; //BUG: Something is amiss here
         if( !hasUserForcedRPPoint )
           {
-            orig_lmks["RP"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks["RP"] );
+            orig_lmks["RP"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks_constant.at("RP") );
           }
         if( !hasUserForcedVN4Point )
           {
-          orig_lmks["VN4"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks["VN4"] );
+          orig_lmks["VN4"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks_constant.at("VN4") );
           }
         if( !hasUserForcedACPoint )
           {
-            orig_lmks["AC"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks["AC"] );
+            orig_lmks["AC"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks_constant.at("AC") );
           }
         if( !hasUserForcedPCPoint )
           {
-            orig_lmks["PC"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks["PC"] );
+            orig_lmks["PC"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks_constant.at("PC") );
           }
-          orig_lmks["CM"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks["CM"] );
+          orig_lmks["CM"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks_constant.at("CM") );
           orig_lmks["LE"] = this->m_orig_lmk_LE;
           orig_lmks["RE"] = this->m_orig_lmk_RE;
         }
       else
         {
-        this->m_orig_lmks["LE"] =
-          this->m_test_orig2msp_img_tfm->TransformPoint( this->m_msp_lmks["LE"] );
-        this->m_orig_lmks["RE"] =
-          this->m_test_orig2msp_img_tfm->TransformPoint( this->m_msp_lmks["RE"] );
+        this->m_orig_lmks_constant["LE"] =
+          this->m_test_orig2msp_img_tfm->TransformPoint( this->m_msp_lmks.at("LE") );
+        this->m_orig_lmks_constant["RE"] =
+          this->m_test_orig2msp_img_tfm->TransformPoint( this->m_msp_lmks.at("RE") );
         }
 
       // Write some debug images
@@ -1161,9 +1161,9 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
 
           std::string OrigMaskImageName
             ( this->m_ResultsDir + "/Orig_Mask.nii.gz" );
-          MakeLabelImage( this->m_eyeFixed_img, this->m_orig_lmks["RP"],
-                          this->m_orig_lmks["AC"], this->m_orig_lmks["PC"],
-                          this->m_orig_lmks["VN4"], OrigMaskImageName );
+          MakeLabelImage( this->m_eyeFixed_img, this->m_orig_lmks_constant.at("RP"),
+                          this->m_orig_lmks_constant.at("AC"), this->m_orig_lmks_constant.at("PC"),
+                          this->m_orig_lmks_constant.at("VN4"), OrigMaskImageName );
           }
         }
 
@@ -1188,19 +1188,19 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       LandmarksMapType msp_lmks;    // named points in ACPC-aligned space
         {
         msp_lmks["AC"] =
-          orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks["AC"] );
+          orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("AC") );
         msp_lmks["PC"] =
-          orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks["PC"] );
+          orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("PC") );
         msp_lmks["RP"] =
-          orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks["RP"] );
+          orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("RP") );
         msp_lmks["VN4"] =
-          orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks["VN4"] );
+          orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("VN4") );
         msp_lmks["CM"] =
-          orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks["CM"] );
+          orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("CM") );
         msp_lmks["LE"] =
-          orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks["LE"] );
+          orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("LE") );
         msp_lmks["RE"] =
-          orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks["RE"] );
+          orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("RE") );
         }
 
       // Get a copy of landmarks on ACPC plane for eliminating accumulative
@@ -1247,8 +1247,8 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
 
             //HACK : The following looks like an identity mapping
             msp_lmks[iit->first] =
-              orig2msp_lmk_tfm->TransformPoint( this->m_test_orig2msp_img_tfm->TransformPoint( this->m_msp_lmks[iit->first] ) );
-            raw_msp_lmks[iit->first] = msp_lmks[iit->first];
+              orig2msp_lmk_tfm->TransformPoint( this->m_test_orig2msp_img_tfm->TransformPoint( this->m_msp_lmks.at(iit->first) ) );
+            raw_msp_lmks[iit->first] = msp_lmks.at(iit->first);
             }
           else
             {
@@ -1287,19 +1287,19 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
             msp_lmks[iit->first][2] = raw_msp_lmks[iit->first][2];
 
             // Obtain the position of the current landmark in other spaces
-            this->m_orig_lmks[iit->first] =
-              this->m_orig2msp_img_tfm->TransformPoint( msp_lmks[iit->first] );
+            this->m_orig_lmks_constant[iit->first] =
+              this->m_orig2msp_img_tfm->TransformPoint( msp_lmks.at(iit->first) );
             if( !hasUserSpecEyeCenterInfo )
               {
               this->m_msp_lmks[iit->first] =
-                orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks[iit->first] );
+                orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at(iit->first) );
               this->m_msp_lmks[iit->first] =
-                eyeFixed2msp_lmk_tfm->TransformPoint( this->m_msp_lmks[iit->first] );
+                eyeFixed2msp_lmk_tfm->TransformPoint( this->m_msp_lmks.at(iit->first) );
               }
             else
               {
               this->m_msp_lmks[iit->first] =
-                eyeFixed2msp_lmk_tfm->TransformPoint( this->m_orig_lmks[iit->first] );
+                eyeFixed2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at(iit->first) );
               }
 
             // Enable local search
@@ -1317,14 +1317,14 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
                                      cc_Max, iit->first );
 
               // Update landmarks in input and ACPC-aligned space
-              this->m_orig_lmks[iit->first] = this->m_test_orig2msp_img_tfm->TransformPoint( this->m_msp_lmks[iit->first] );
+              this->m_orig_lmks_constant[iit->first] = this->m_test_orig2msp_img_tfm->TransformPoint( this->m_msp_lmks.at(iit->first) );
               if( !hasUserSpecEyeCenterInfo )
                 {
-                this->m_orig_lmks[iit->first] =
-                  this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks[iit->first] );
+                this->m_orig_lmks_constant[iit->first] =
+                  this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks_constant.at(iit->first) );
                 }
               msp_lmks[iit->first] =
-                orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks[iit->first] );
+                orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at(iit->first) );
               }
             }
           } // End of arbitrary landmarks detection for the rest of "new" ones
