@@ -1219,13 +1219,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
         // Build up an evolutionary processing list
         // order: RP, AC, PC, VN4, LE, RE, ...
         // Note this order should comply with the order we defined in LLS model
-        std::vector<std::string> processingList;
-        processingList.emplace_back( "RP" );
-        processingList.emplace_back( "AC" );
-        processingList.emplace_back( "PC" );
-        processingList.emplace_back( "VN4" );
-        processingList.emplace_back( "LE" );
-        processingList.emplace_back( "RE" );
+        std::vector<std::string> processingList{"RP","AC","PC","VN4","LE","RE"};
         unsigned int numBaseLandmarks = 6;
         unsigned int dim = 3;
         for( unsigned int ii = 1; ii <= m_LlsMatrices.size(); ++ii )
