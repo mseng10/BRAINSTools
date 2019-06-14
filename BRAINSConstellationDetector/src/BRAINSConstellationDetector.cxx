@@ -33,6 +33,11 @@ int main( int argc, char *argv[] )
   FFTWInit(""); //Initialize for FFTW in order to improve performance of subsequent runs
   BRAINSRegisterAlternateIO();
 
+  //There is some multi-threading problem that has EXTREEME performance degredation
+  // when numberOfThreads is greater than 4.
+  const int hack_max_num_threads = std::max(4,numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(hack_max_num_threads);
+
   const std::string Version(BCDVersionString);
   std::cout << "Run BRAINSConstellationDetector Version: " << Version << std::endl;
   // ------------------------------------
@@ -104,7 +109,7 @@ int main( int argc, char *argv[] )
     }
 
   BRAINSConstellationDetectorPrimary BCD;
-  BCD.SetNumberOfWorkUnits( numberOfThreads );
+  BCD.SetNumberOfWorkUnits( hack_max_num_threads );
   BCD.SetInputLandmarksEMSP( inputLandmarksEMSP );
   BCD.SetLLSModel( llsModel );
   BCD.SetInputVolume( inputVolume );
