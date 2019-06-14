@@ -238,8 +238,12 @@ private:
 
   void DoResampleInPlace( const SImageType::ConstPointer, const RigidTransformType::ConstPointer, SImageType::Pointer & );
 
-  static VersorTransformType::Pointer Compute_orig2msp_img_tfm(const LandmarksMapType & updated_lmks);
+  static VersorTransformType::Pointer Compute_orig2msp_img_tfm(const SImagePointType & RP, const SImagePointType & AC, const SImagePointType & PC);
 
+  static bool mapHasKey(const LandmarksMapType & map, const std::string key)
+  {
+    return map.find(key) != map.cend();
+  }
   // Linear model estimation using EPCA
   void LinearEstimation( LandmarksMapType & namedPoints, const std::vector<std::string> & processingList,
                          unsigned int numBasePoints );
