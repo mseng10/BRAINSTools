@@ -860,7 +860,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
         mspSpaceCEC[0] = 0; // Search starts on the estimated MSP
       }
     std::cout << "\nPerforming morpohmetric search + local search..." << std::endl;
-    LandmarksMapType local_msp_lmks;              // named points in EMSP space
+
       {
       /*
        * Search for MPJ ( RP )
@@ -871,12 +871,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       double searchRadiusLR = 4.; // in mm, and it is only for landmarks near
                                   // MSP
       double cc_RP_Max = 0;
-      if( local_msp_lmks.find( "RP" ) != local_msp_lmks.end() )
-        {
-        msp_lmk_RP_Candidate = local_msp_lmks["RP"];
-        std::cout << "Skip estimation, directly load from file." << std::endl;
-        }
-      else if( hasUserForcedRPPoint )
+      if( hasUserForcedRPPoint )
         {
         std::cout << "Skip estimation, directly forced by command line." << std::endl;
         msp_lmk_RP_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("RP") ) );
@@ -946,12 +941,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
 
       double cc_VN4_Max = 0;
 
-      if( local_msp_lmks.find( "VN4" ) != local_msp_lmks.end() )
-        {
-        msp_lmk_VN4_Candidate = local_msp_lmks["VN4"];
-        std::cout << "Skip estimation, directly load from file." << std::endl;
-        }
-      else if( hasUserForcedVN4Point )
+      if( hasUserForcedVN4Point )
         {
         std::cout << "Skip estimation, directly forced by command line." << std::endl;
         msp_lmk_VN4_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("VN4") ) );
@@ -984,12 +974,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
           ( RPtoCEC, this->m_InputTemplateModel.GetRPtoCECMean(),
           this->m_InputTemplateModel.GetRPtoXMean( "AC" ), 1 );
       double cc_AC_Max = 0;
-      if( local_msp_lmks.find( "AC" ) != local_msp_lmks.end() )
-        {
-        msp_lmk_AC_Candidate = local_msp_lmks["AC"];
-        std::cout << "Skip estimation, directly load from file." << std::endl;
-        }
-      else if( hasUserForcedACPoint )
+      if( hasUserForcedACPoint )
         {
         std::cout << "Skip estimation, directly forced by command line." << std::endl;
         msp_lmk_AC_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("AC") ) );
@@ -1022,12 +1007,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
           ( RPtoCEC, this->m_InputTemplateModel.GetRPtoCECMean(),
           this->m_InputTemplateModel.GetRPtoXMean( "PC" ), 1 );
       double cc_PC_Max = 0;
-      if( local_msp_lmks.find( "PC" ) != local_msp_lmks.end() )
-        {
-        msp_lmk_PC_Candiate = local_msp_lmks["PC"];
-        std::cout << "Skip estimation, directly load from file." << std::endl;
-        }
-      else if( hasUserForcedPCPoint )
+      if( hasUserForcedPCPoint )
         {
         std::cout << "Skip estimation, directly forced by command line." << std::endl;
         msp_lmk_PC_Candiate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("PC") ) );
@@ -1155,15 +1135,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
           }
         }
 
-      // Save some named points in EMSP space mainly for debug use
-        {
-        local_msp_lmks["AC"] = msp_lmk_AC_Candidate;
-        local_msp_lmks["PC"] = msp_lmk_PC_Candiate;
-        local_msp_lmks["RP"] = msp_lmk_RP_Candidate;
-        local_msp_lmks["VN4"] = msp_lmk_VN4_Candidate;
-        local_msp_lmks["CM"] = this->m_msp_lmk_CenterOfHeadMass;
-        // Eye centers in EMSP have been saved in a earlier time
-        }
+
 
       // Compute the AC-PC aligned transform
       // Note for the sake of EPCA, we need the transform at this stage
@@ -1173,29 +1145,38 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       VersorTransformType::Pointer orig2msp_lmk_tfm = GetLandmarkTransformFromImageTransform( this->m_orig2msp_img_tfm.GetPointer()  );
 
       // Save some named points in AC-PC aligned space
-      LandmarksMapType msp_lmks;    // named points in ACPC-aligned space
+      LandmarksMapType msp_lmks_from_orig_space;    // named points in ACPC-aligned space
         {
-        msp_lmks["AC"] =
+        msp_lmks_from_orig_space["AC"] =
           orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_updated.at("AC") );
-        msp_lmks["PC"] =
+        msp_lmks_from_orig_space["PC"] =
           orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_updated.at("PC") );
-        msp_lmks["RP"] =
+        msp_lmks_from_orig_space["RP"] =
           orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_updated.at("RP") );
-        msp_lmks["VN4"] =
+        msp_lmks_from_orig_space["VN4"] =
           orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_updated.at("VN4") );
-        msp_lmks["CM"] =
+        msp_lmks_from_orig_space["CM"] =
           orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_updated.at("CM") );
-        msp_lmks["LE"] =
+        msp_lmks_from_orig_space["LE"] =
           orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_updated.at("LE") );
-        msp_lmks["RE"] =
+        msp_lmks_from_orig_space["RE"] =
           orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_updated.at("RE") );
         }
 
       // Get a copy of landmarks on ACPC plane for eliminating accumulative
       // errors of local search process
-      LandmarksMapType raw_msp_lmks = msp_lmks; // reserve this map to avoid the accumulation of local search errors
+      LandmarksMapType raw_msp_lmks = msp_lmks_from_orig_space; // reserve this map to avoid the accumulation of local search errors
 
-
+        // Save some named points in EMSP space mainly for debug use
+        LandmarksMapType local_msp_lmks_algo_found;              // named points in EMSP space
+        {
+          local_msp_lmks_algo_found["AC"] = msp_lmk_AC_Candidate;
+          local_msp_lmks_algo_found["PC"] = msp_lmk_PC_Candiate;
+          local_msp_lmks_algo_found["RP"] = msp_lmk_RP_Candidate;
+          local_msp_lmks_algo_found["VN4"] = msp_lmk_VN4_Candidate;
+          local_msp_lmks_algo_found["CM"] = this->m_msp_lmk_CenterOfHeadMass;
+          // Eye centers in EMSP have been saved in a earlier time
+        }
       /*
      * For the rest of the landmarks
      *
@@ -1229,16 +1210,6 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
             }
 
           std::cout << "Processing " << iit->first << "..." << std::endl;
-          if( local_msp_lmks.find( iit->first ) != local_msp_lmks.end() )
-            {
-            std::cout << "Skip estimation, directly load from file." << std::endl;
-
-            //TODO HACK : The following looks like an identity mapping
-            msp_lmks[iit->first] =
-              orig2msp_lmk_tfm->TransformPoint( this->m_test_orig2msp_img_tfm->TransformPoint( local_msp_lmks.at(iit->first) ) );
-            raw_msp_lmks[iit->first] = msp_lmks.at(iit->first);
-            }
-          else
             {
             // in every iteration, the last name in the processing list
             // indicates the landmark to be estimated
@@ -1270,15 +1241,15 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
                 }
               }
 
-              //TODO: Simplify below to msp_lmks[iit->first] = raw_msp_lmks.at(iit->first)
-            msp_lmks[iit->first][0] = raw_msp_lmks[iit->first][0];
-            msp_lmks[iit->first][1] = raw_msp_lmks[iit->first][1];
-            msp_lmks[iit->first][2] = raw_msp_lmks[iit->first][2];
+              //TODO: Simplify below to msp_lmks_from_orig_space[iit->first] = raw_msp_lmks.at(iit->first)
+            msp_lmks_from_orig_space[iit->first][0] = raw_msp_lmks[iit->first][0];
+            msp_lmks_from_orig_space[iit->first][1] = raw_msp_lmks[iit->first][1];
+            msp_lmks_from_orig_space[iit->first][2] = raw_msp_lmks[iit->first][2];
 
             // Obtain the position of the current landmark in other spaces
-            this->m_orig_lmks_updated[iit->first] = this->m_orig2msp_img_tfm->TransformPoint( msp_lmks.at(iit->first) );
+            this->m_orig_lmks_updated[iit->first] = this->m_orig2msp_img_tfm->TransformPoint( msp_lmks_from_orig_space.at(iit->first) );
               {
-              local_msp_lmks[iit->first] =  eyeFixed2msp_lmk_tfm->TransformPoint(
+              local_msp_lmks_algo_found[iit->first] =  eyeFixed2msp_lmk_tfm->TransformPoint(
                 orig2eyeFixed_lmk_tfm->TransformPoint( this->m_eyeFixed_lmks.at(iit->first) )
                 );  //TODO: Verify this
               }
@@ -1289,22 +1260,22 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
               {
               // local search
               double cc_Max = 0;
-              local_msp_lmks[iit->first] =
+              local_msp_lmks_algo_found[iit->first] =
                 FindCandidatePoints( this->m_msp_img, mask_LR, localSearchRadiusLR,
                                      this->m_SearchRadii[iit->first],
                                      this->m_SearchRadii[iit->first],
-                                     local_msp_lmks[iit->first].GetVectorFromOrigin(),
+                                     local_msp_lmks_algo_found[iit->first].GetVectorFromOrigin(),
                                      this->m_InputTemplateModel.GetTemplateMeans( iit->first ),
                                      this->m_InputTemplateModel.m_VectorIndexLocations[iit->first],
                                      cc_Max, iit->first );
 
               // Update landmarks in input and ACPC-aligned space
-              this->m_orig_lmks_updated[iit->first] = this->m_test_orig2msp_img_tfm->TransformPoint( local_msp_lmks.at(iit->first) );
+              this->m_orig_lmks_updated[iit->first] = this->m_test_orig2msp_img_tfm->TransformPoint( local_msp_lmks_algo_found.at(iit->first) );
                 {
                 this->m_eyeFixed_lmks[iit->first] =
                   this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks_updated.at(iit->first) );
                 }
-              msp_lmks[iit->first] =
+              msp_lmks_from_orig_space[iit->first] =
                 orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_updated.at(iit->first) );
               }
             }
@@ -1317,7 +1288,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
         {
         WriteITKtoSlicer3Lmk
           ( this->m_ResultsDir + "/EMSP.fcsv",
-          local_msp_lmks );
+          local_msp_lmks_algo_found );
         }
       } // End of local searching kernel
     }   // End of local searching
