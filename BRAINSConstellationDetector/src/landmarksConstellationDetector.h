@@ -116,7 +116,7 @@ public:
     return m_InputTemplateModel.GetRadius(PointName);
   }
 
-  RigidTransformType::Pointer GeteyeFixed2msp_img_tfm() const
+  RigidTransformType::Pointer Getorig2msp_img_tfm() const
   {
     RigidTransformType::Pointer value = RigidTransformType::New();
 
