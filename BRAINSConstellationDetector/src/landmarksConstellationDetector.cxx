@@ -860,13 +860,9 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
     if( !hasUserSpecEyeCenterInfo )
       {
       m_msp_lmks["LE"] =
-        orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmk_LE );
-      m_msp_lmks["LE"] =
-        eyeFixed2msp_lmk_tfm->TransformPoint( this->m_msp_lmks["LE"] );
+        eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmk_LE ) );
       m_msp_lmks["RE"] =
-        orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmk_RE );
-      m_msp_lmks["RE"] =
-        eyeFixed2msp_lmk_tfm->TransformPoint( this->m_msp_lmks["RE"] );
+        eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmk_RE ));
       }
 
     mspSpaceCEC.SetToMidPoint( this->m_msp_lmks["LE"],
@@ -892,9 +888,6 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       else if( hasUserForcedRPPoint )
         {
         std::cout << "Skip estimation, directly forced by command line." << std::endl;
-        // Points chosen by Slicer should be converted to proper ITK representation
-        this->m_eyeFixed_lmks["RP"][0] = -(this->m_eyeFixed_lmks["RP"][0]);
-        this->m_eyeFixed_lmks["RP"][1] = -(this->m_eyeFixed_lmks["RP"][1]);
         msp_lmk_RP_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_eyeFixed_lmks["RP"] ) );
         }
       else
@@ -970,9 +963,6 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       else if( hasUserForcedVN4Point )
         {
         std::cout << "Skip estimation, directly forced by command line." << std::endl;
-        // Points chosen by Slicer should be converted to proper ITK representation
-        this->m_eyeFixed_lmks["VN4"][0] = -(this->m_eyeFixed_lmks["VN4"][0]);
-        this->m_eyeFixed_lmks["VN4"][1] = -(this->m_eyeFixed_lmks["VN4"][1]);
         msp_lmk_VN4_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_eyeFixed_lmks["VN4"] ) );
         }
       else
@@ -1011,9 +1001,6 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       else if( hasUserForcedACPoint )
         {
         std::cout << "Skip estimation, directly forced by command line." << std::endl;
-        // Points chosen by Slicer should be converted to proper ITK representation
-        this->m_eyeFixed_lmks["AC"][0] = -(this->m_eyeFixed_lmks["AC"][0]);
-        this->m_eyeFixed_lmks["AC"][1] = -(this->m_eyeFixed_lmks["AC"][1]);
         msp_lmk_AC_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_eyeFixed_lmks["AC"] ) );
         }
       else
@@ -1052,9 +1039,6 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       else if( hasUserForcedPCPoint )
         {
         std::cout << "Skip estimation, directly forced by command line." << std::endl;
-        // Points chosen by Slicer should be converted to proper ITK representation
-        this->m_eyeFixed_lmks["PC"][0] = -(this->m_eyeFixed_lmks["PC"][0]);
-        this->m_eyeFixed_lmks["PC"][1] = -(this->m_eyeFixed_lmks["PC"][1]);
         msp_lmk_PC_Candiate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_eyeFixed_lmks["PC"] ) );
         }
       else
