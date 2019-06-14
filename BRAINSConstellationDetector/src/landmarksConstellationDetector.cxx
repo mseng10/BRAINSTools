@@ -859,7 +859,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
 
       if( hasUserForcedRPPoint )
         {
-        std::cout << "Skip estimation, directly forced by command line." << std::endl;
+        std::cout << "Skip estimation of RP, directly forced by command line." << std::endl;
         msp_lmk_RP_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("RP") ) );
         }
       else
@@ -929,7 +929,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
 
       if( hasUserForcedVN4Point )
         {
-        std::cout << "Skip estimation, directly forced by command line." << std::endl;
+        std::cout << "Skip estimation of VN4, directly forced by command line." << std::endl;
         msp_lmk_VN4_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("VN4") ) );
         }
       else
@@ -962,7 +962,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       double cc_AC_Max = 0;
       if( hasUserForcedACPoint )
         {
-        std::cout << "Skip estimation, directly forced by command line." << std::endl;
+        std::cout << "Skip estimation of AC , directly forced by command line." << std::endl;
         msp_lmk_AC_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("AC") ) );
         }
       else
@@ -995,7 +995,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       double cc_PC_Max = 0;
       if( hasUserForcedPCPoint )
         {
-        std::cout << "Skip estimation, directly forced by command line." << std::endl;
+        std::cout << "Skip estimation of PC, directly forced by command line." << std::endl;
         msp_lmk_PC_Candiate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("PC") ) );
         }
       else
