@@ -1244,10 +1244,10 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
           if( this->m_msp_lmks.find( iit->first ) != this->m_msp_lmks.end() )
             {
             std::cout << "Skip estimation, directly load from file." << std::endl;
-            this->m_orig_lmks[iit->first] =
-              this->m_test_orig2msp_img_tfm->TransformPoint( this->m_msp_lmks[iit->first] );
+
+            //HACK : The following looks like an identity mapping
             msp_lmks[iit->first] =
-              orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks[iit->first] );
+              orig2msp_lmk_tfm->TransformPoint( this->m_test_orig2msp_img_tfm->TransformPoint( this->m_msp_lmks[iit->first] ) );
             raw_msp_lmks[iit->first] = msp_lmks[iit->first];
             }
           else
