@@ -268,17 +268,17 @@ public:
   /** Set results dir */
   itkSetMacro(ResultsDir, std::string);
 
-  /** Set/Get EMSP landmarks */
-  void Setmsp_lmks(LandmarksMapType landmarks)
-  {
-    m_msp_lmks.clear();
-    m_msp_lmks.insert( landmarks.begin(), landmarks.end() );
-  }
+//  /** Set/Get EMSP landmarks */
+//  void Setmsp_lmks(LandmarksMapType landmarks)
+//  {
+//    m_msp_lmks.clear();
+//    m_msp_lmks.insert( landmarks.begin(), landmarks.end() );
+//  }
 
-  LandmarksMapType Getmsp_lmks()
-  {
-    return m_msp_lmks;
-  }
+//  LandmarksMapType Getmsp_lmks()
+//  {
+//    return m_msp_lmks;
+//  }
 
   itkSetMacro(atlasVolume, std::string);
   itkSetMacro(atlasLandmarks, std::string);
@@ -324,9 +324,10 @@ protected:
                                                     // the original space by
                                                     // Hough eye detector
   SImagePointType  m_orig_lmk_RE;
+
   SImagePointType  m_eyeFixed_lmk_CenterOfHeadMass;
   SImagePointType  m_orig_lmk_CenterOfHeadMass;
-  LandmarksMapType m_msp_lmks;
+//  LandmarksMapType m_msp_lmks;
   bool             m_HoughEyeFailure;
 
   std::map<std::string,
