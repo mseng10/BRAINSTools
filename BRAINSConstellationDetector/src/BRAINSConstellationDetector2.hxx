@@ -390,7 +390,7 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
 
   itk::ApplyInverseOfTransformToLandmarks(
     this->m_OrigToACPCVersorTransform.GetPointer(), //Input RO
-                                           myDetector.Getorig_lmks(),
+                                           myDetector.Getorig_lmks_updated(),
     this->m_AlignedPoints
   );
 
