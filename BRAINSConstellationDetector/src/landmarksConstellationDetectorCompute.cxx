@@ -168,15 +168,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       VersorTransformType::Pointer orig2eyeFixed_lmk_tfm = VersorTransformType::New();
       this->m_orig2eyeFixed_img_tfm->GetInverse( orig2eyeFixed_lmk_tfm );
 
-      //TODO: Remove these constants.  just query the map.
-      // save the result that whether we are going to process all the landmarks
-      // in light of user-specified eye center info.
-      const bool hasUserForcedRPPoint = mapHasKey(m_orig_lmks_forced, "RP");
-      const bool hasUserForcedACPoint = mapHasKey(m_orig_lmks_forced, "AC");
-      const bool hasUserForcedPCPoint = mapHasKey(m_orig_lmks_forced, "PC");
-      const bool hasUserForcedVN4Point = mapHasKey(m_orig_lmks_forced, "VN4");
-
-      if( hasUserForcedRPPoint )
+      if( mapHasKey(m_orig_lmks_forced, "RP") )
         {
           std::cout << "Skip estimation of RP, directly forced by command line." << std::endl;
           msp_lmk_RP_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_forced.at("RP") ) );
@@ -257,7 +249,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
 
       double cc_VN4_Max = 0;
 
-      if( hasUserForcedVN4Point )
+      if( mapHasKey(m_orig_lmks_forced, "VN4") )
         {
           std::cout << "Skip estimation of VN4, directly forced by command line." << std::endl;
           msp_lmk_VN4_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_forced.at("VN4") ) );
@@ -290,7 +282,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
         ( RPtoCEC, this->m_InputTemplateModel.GetRPtoCECMean(),
           this->m_InputTemplateModel.GetRPtoXMean( "AC" ), 1 );
       double cc_AC_Max = 0;
-      if( hasUserForcedACPoint )
+      if( mapHasKey(m_orig_lmks_forced, "AC") )
         {
           std::cout << "Skip estimation of AC , directly forced by command line." << std::endl;
           msp_lmk_AC_Candidate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_forced.at("AC") ) );
@@ -323,7 +315,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
         ( RPtoCEC, this->m_InputTemplateModel.GetRPtoCECMean(),
           this->m_InputTemplateModel.GetRPtoXMean( "PC" ), 1 );
       double cc_PC_Max = 0;
-      if( hasUserForcedPCPoint )
+      if( mapHasKey(m_orig_lmks_forced, "PC") )
         {
           std::cout << "Skip estimation of PC, directly forced by command line." << std::endl;
           msp_lmk_PC_Candiate = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_forced.at("PC") ) );
@@ -380,7 +372,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       // Also in this stage, we store some results for later use
       // Save named points in original space
 
-      if( !hasUserForcedRPPoint )
+      if( !mapHasKey(m_orig_lmks_forced, "RP") )
         {
           const SImagePointType tempLoc =
             this->m_test_orig2msp_img_tfm->TransformPoint( msp_lmk_RP_Candidate );
@@ -388,7 +380,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
           this->m_orig_lmks_updated["RP"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( tempLoc );
         }
 
-      if( !hasUserForcedVN4Point )
+      if( !mapHasKey(m_orig_lmks_forced, "VN4") )
         {
           const SImagePointType tempLoc =
             this->m_test_orig2msp_img_tfm->TransformPoint( msp_lmk_VN4_Candidate );
@@ -396,7 +388,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
           this->m_orig_lmks_updated["VN4"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( tempLoc );
         }
 
-      if( !hasUserForcedACPoint )
+      if( !mapHasKey(m_orig_lmks_forced, "AC") )
         {
           const SImagePointType tempLoc =
             this->m_test_orig2msp_img_tfm->TransformPoint( msp_lmk_AC_Candidate );
@@ -407,7 +399,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
           std::cout << "orig AC:            " << this->m_orig_lmks_updated["AC"] << std::endl;
         }
 
-      if( !hasUserForcedPCPoint )
+      if( !mapHasKey(m_orig_lmks_forced, "PC") )
         {
           const SImagePointType tempLoc =
             this->m_test_orig2msp_img_tfm->TransformPoint( msp_lmk_PC_Candiate );
