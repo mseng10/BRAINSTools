@@ -225,9 +225,9 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
     SImageType::PointType mspSpaceCEC;
     //{
     SImageType::PointType eyeFixed_LE =
-      eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmk_LE ) );
+      eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("LE") ) );
     SImageType::PointType eyeFixed_RE =
-      eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmk_RE ) );
+      eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_constant.at("RE") ) );
 
 
     mspSpaceCEC.SetToMidPoint( eyeFixed_LE, eyeFixed_RE );
@@ -495,8 +495,8 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       this->m_orig_lmks_updated["CM"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks_updated.at("CM") );
       }
       lmk_check_differences( m_orig_lmks_constant, m_orig_lmks_updated, false, __FILE__ , __LINE__);
-      this->m_orig_lmks_updated["LE"] = this->m_orig_lmk_LE;
-      this->m_orig_lmks_updated["RE"] = this->m_orig_lmk_RE;
+      this->m_orig_lmks_updated["LE"] = this->m_orig_lmks_constant.at("LE");
+      this->m_orig_lmks_updated["RE"] = this->m_orig_lmks_constant.at("RE");
 
       lmk_check_differences( m_orig_lmks_constant, m_orig_lmks_updated, false, __FILE__ , __LINE__);
 
