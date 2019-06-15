@@ -464,14 +464,16 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
     {
     WriteITKtoSlicer3Lmk( this->m_outputLandmarksInInputSpace,
       this->m_outputLandmarksInInputSpaceMap );
-    std::cout << "The output landmarks list file in the original space is written." << std::endl;
+    std::cout << "The output landmarks list file in the original space is written. \n    "
+    << this->m_outputLandmarksInInputSpace <<std::endl;
     }
 
   if( this->m_outputLandmarksInACPCAlignedSpace.compare( "" ) != 0 )
     {
     WriteITKtoSlicer3Lmk( this->m_outputLandmarksInACPCAlignedSpace,
       this->m_outputLandmarksInACPCAlignedSpaceMap );
-    std::cout << "The output landmarks list file in the output space is written." << std::endl;
+    std::cout << "The output landmarks list file in the output space is written. \n    "
+    << this->m_outputLandmarksInACPCAlignedSpace << std::endl;
     if( preferedOutputReferenceImage.compare( "" ) == 0 )
       {
       std::cout << "WARNING no aligned output volume is requested." << std::endl;
