@@ -60,12 +60,6 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
   this->m_OriginalInputImage = nullptr;
   this->m_orig2eyeFixed_img_tfm = nullptr;
 
-  this->m_orig_lmk_LE.Fill(-123.0);
-  this->m_orig_lmk_RE.Fill(-123.0);
-  this->m_eyeFixed_lmk_CenterOfHeadMass.Fill(-12345.0);
-  this->m_orig_lmk_CenterOfHeadMass.Fill(-12345.0);
-
-//  m_msp_lmks.clear();
   m_HoughEyeFailure=false;
 
   this->m_LlsMatrices.clear();
@@ -229,7 +223,6 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
     this->m_CleanedIntensityOriginalInputImage = copyOfOriginalInputImage;
     }
 
-  LandmarksMapType forced_orig_lmks;
   { /** Force setting the landmark points from the command line. */
     if( this->m_Force_orig_lmk_ACPointLPS.size() == 3 )
       {
@@ -238,7 +231,7 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
           {
             manualACPoint[i] = this->m_Force_orig_lmk_ACPointLPS[i];
           }
-        forced_orig_lmks["AC"]      = manualACPoint;
+        m_forced_orig_lmks["AC"]      = manualACPoint;
       }
     if( this->m_Force_orig_lmk_PCPointLPS.size() == 3 )
       {
@@ -247,7 +240,7 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
           {
             manualPCPoint[i] = this->m_Force_orig_lmk_PCPointLPS[i];
           }
-        forced_orig_lmks["PC"]      = manualPCPoint;
+        m_forced_orig_lmks["PC"]      = manualPCPoint;
       }
     if( this->m_Force_orig_lmk_VN4PointLPS.size() == 3 )
       {
@@ -256,7 +249,7 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
           {
             manualVN4Point[i] = this->m_Force_orig_lmk_VN4PointLPS[i];
           }
-        forced_orig_lmks["VN4"]      = manualVN4Point;
+        m_forced_orig_lmks["VN4"]      = manualVN4Point;
       }
     if( this->m_Force_orig_lmk_RPPointLPS.size() == 3 )
       {
@@ -265,15 +258,12 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
           {
             manualRPPoint[i] = this->m_Force_orig_lmk_RPPointLPS[i];
           }
-        forced_orig_lmks["RP"]      = manualRPPoint;
+        m_forced_orig_lmks["RP"]      = manualRPPoint;
       }
-    forced_orig_lmks["LE"] = this->m_orig_lmk_LE;
-    forced_orig_lmks["RE"] = this->m_orig_lmk_RE;
-    //forced_orig_lmks["CM"] =
   }
-  landmarksConstellationDetector myDetector(forced_orig_lmks);
+  landmarksConstellationDetector myDetector(m_forced_orig_lmks);
   //TODO:
-  myDetector.SeteyeFixed_lmk_CenterOfHeadMass( this->m_eyeFixed_lmk_CenterOfHeadMass );
+  //myDetector.SeteyeFixed_lmk_CenterOfHeadMass( this->m_eyeFixed_lmk_CenterOfHeadMass );
 
   {
     // a little abuse of the eyeFixed_img_duplicator here

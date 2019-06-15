@@ -307,7 +307,7 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
   constellation2->Setorig_lmk_LE( orig_lmks.at("LE") );
   constellation2->Setorig_lmk_RE( orig_lmks.at("RE") );
 
-#if 0 // HACK: Probably need to undo a translation somewhere in other file
+#if 1 // TODO HACK: Probably need to undo a translation somewhere in other file
   constellation2->Setorig_lmk_CenterOfHeadMass( orig_lmks.at("CM") );
 #else
   constellation2->SeteyeFixed_lmk_CenterOfHeadMass( eyeFixed_lmks.at("CM") ); //This is likely wrong!

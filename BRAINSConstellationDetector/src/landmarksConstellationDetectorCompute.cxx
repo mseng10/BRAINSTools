@@ -56,11 +56,13 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
   bool forced_landmark_compare_are_same = true;;
   std::cout << "\nEstimating MSP..." << std::endl;
 
-
+  VersorTransformType::Pointer orig2eyeFixed_lmk_tfm = VersorTransformType::New();
+  this->m_orig2eyeFixed_img_tfm->GetInverse(orig2eyeFixed_lmk_tfm);
+  SImagePointType  eyeFixed_lmk_CenterOfHeadMass = orig2eyeFixed_lmk_tfm->TransformPoint(m_orig_lmks_forced.at("CM"));
   if( globalImagedebugLevel > 2 )
     {
       LandmarksMapType eyeFixed_lmks;
-      eyeFixed_lmks["CM"] = this->m_eyeFixed_lmk_CenterOfHeadMass;
+      eyeFixed_lmks["CM"] = eyeFixed_lmk_CenterOfHeadMass;
       const std::string roughlyAlignedCHMName( this->m_ResultsDir + "/eyeFixed_lmks.fcsv" );
       WriteITKtoSlicer3Lmk( roughlyAlignedCHMName, eyeFixed_lmks );
 
@@ -68,10 +70,10 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       itkUtil::WriteImage<SImageType>( this->m_eyeFixed_img, roughlyAlignedVolumeName );
     }
 
-  // Compute the estimated MSP transform, and aligned image
+  // Compute the estimated MSP transform, and aligned image from eye centers data.
   double c_c = 0;
   ComputeMSP( this->m_eyeFixed_img, this->m_test_orig2msp_img_tfm,
-              this->m_msp_img, this->m_eyeFixed_lmk_CenterOfHeadMass, this->m_mspQualityLevel, c_c );
+              this->m_msp_img, eyeFixed_lmk_CenterOfHeadMass, this->m_mspQualityLevel, c_c );
 
   std::cout << "\n=============================================================" << std::endl;
 
@@ -130,7 +132,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
   VersorTransformType::Pointer eyeFixed2msp_lmk_tfm = VersorTransformType::New();
   this->m_test_orig2msp_img_tfm->GetInverse( eyeFixed2msp_lmk_tfm );
 
-  this->m_msp_lmk_CenterOfHeadMass = eyeFixed2msp_lmk_tfm->TransformPoint( this->m_eyeFixed_lmk_CenterOfHeadMass );
+  this->m_msp_lmk_CenterOfHeadMass = ->TransformPoint( this->m_eyeFixed_lmk_CenterOfHeadMass );
   this->m_msp_lmk_CenterOfHeadMass[0] = 0; // Search starts on the estimated MSP
 
   {
