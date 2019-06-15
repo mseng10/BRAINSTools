@@ -44,7 +44,7 @@ static bool lmk_check_differences( const LandmarksMapType & ref, const Landmarks
     if( backward_compare )
       {
         std::cerr << "--- Backwards Compare" << std::endl;
-        ref_lmks_same_in_cmp=lmk_check_differences(cmp, ref, false, filename, lineno);
+        ref_lmks_same_in_cmp = lmk_check_differences(cmp, ref, false, filename, lineno);
       }
   const char * const  status = (ref_lmks_same_in_cmp) ? "SUCCESS" : "FAILED";
   std::cerr << "============" << status << std::endl;
@@ -53,7 +53,7 @@ static bool lmk_check_differences( const LandmarksMapType & ref, const Landmarks
 
 void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_image )
 {
-
+  bool forced_landmark_compare_are_same = true;;
   std::cout << "\nEstimating MSP..." << std::endl;
 
 
@@ -255,7 +255,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       const bool hasUserForcedPCPoint = mapHasKey(m_orig_lmks_forced, "PC");
       const bool hasUserForcedVN4Point = mapHasKey(m_orig_lmks_forced, "VN4");
 
-      lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
+      forced_landmark_compare_are_same = lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
         if( hasUserForcedRPPoint )
         {
           std::cout << "Skip estimation of RP, directly forced by command line." << std::endl;
@@ -408,7 +408,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
                                  this->m_InputTemplateModel.m_VectorIndexLocations["PC"],
                                  cc_PC_Max, "PC" );
         }
-      lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
+      forced_landmark_compare_are_same = lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
       // A check point for base landmarks
       if( LMC::globalverboseFlag )
         {
@@ -434,7 +434,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
                                  msp_lmk_PC_Candiate,
                                  msp_lmk_VN4_Candidate
           );
-          lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
+          forced_landmark_compare_are_same = lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
           if( globalImagedebugLevel > 3 )
             {
               std::string LabelImageAName( this->m_ResultsDir + "/MSP_Mask.nii.gz" );
@@ -442,7 +442,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
                               msp_lmk_PC_Candiate, msp_lmk_VN4_Candidate, LabelImageAName );
             }
         }
-      lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
+      forced_landmark_compare_are_same = lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
       // ============================================================================================
       //  Update landmark points
 
@@ -486,7 +486,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
 
           this->m_orig_lmks_updated["PC"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( tempLoc );
         }
-      lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
+      forced_landmark_compare_are_same = lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
       {
       //XXXXXXX
       // HACK TODO: "CM" seems to be wrong here
@@ -494,11 +494,11 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       this->m_orig_lmks_updated["CM"] = this->m_test_orig2msp_img_tfm->TransformPoint( this->m_msp_lmk_CenterOfHeadMass );
       this->m_orig_lmks_updated["CM"] = this->m_orig2eyeFixed_img_tfm->TransformPoint( this->m_orig_lmks_updated.at("CM") );
       }
-      lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
+      forced_landmark_compare_are_same = lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
       this->m_orig_lmks_updated["LE"] = this->m_orig_lmks_forced.at("LE");
       this->m_orig_lmks_updated["RE"] = this->m_orig_lmks_forced.at("RE");
 
-      lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
+      forced_landmark_compare_are_same = lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
 
       // Write some debug images
       {
@@ -517,7 +517,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
                             this->m_orig_lmks_updated.at("VN4"), OrigMaskImageName );
           }
       }
-      lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
+      forced_landmark_compare_are_same = lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
       const std::vector<std::string> base_lmk_names{"RP","AC","PC","VN4","LE","RE"};
 
       // Compute the AC-PC aligned transform
@@ -528,7 +528,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       VersorTransformType::Pointer orig2msp_lmk_tfm = GetLandmarkTransformFromImageTransform( this->m_orig2msp_img_tfm.GetPointer()  );
 
 
-      lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
+      forced_landmark_compare_are_same = lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
 
       // Save some named points in EMSP space mainly for debug use
       LandmarksMapType local_msp_lmks_algo_found;              // named points in EMSP space
@@ -547,7 +547,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
 #endif
       }
 
-      lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
+      forced_landmark_compare_are_same = lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
       /*
      * For the rest of the landmarks
      *
@@ -568,7 +568,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
                 orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_updated.at(lmk_name) );
             }
         }
-        lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
+        forced_landmark_compare_are_same = lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
         // Build up an evolutionary processing list
         // order: RP, AC, PC, VN4, LE, RE, ...
         // Note this order should comply with the order we defined in LLS model
@@ -595,7 +595,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
                     return;
                   }
               }
-            lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
+            forced_landmark_compare_are_same = lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
             const std::string LlsMatrix_name = Lls_info_pair->first;
             std::cout << "Processing iterative update: " << LlsMatrix_name << "..." << std::endl;
             {
@@ -624,7 +624,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
                       }
                   }
               }
-              lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
+              forced_landmark_compare_are_same = lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
               //TODO: Simplify below to msp_lmks_from_orig_space[Lls_info_pair->first] = iteratively_updated_msp_lmks.at(Lls_info_pair->first)
               msp_lmks_from_orig_space[Lls_info_pair->first][0] = iteratively_updated_msp_lmks[Lls_info_pair->first][0];
               msp_lmks_from_orig_space[Lls_info_pair->first][1] = iteratively_updated_msp_lmks[Lls_info_pair->first][1];
@@ -638,7 +638,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
                 );  //TODO: Verify this
               }
 
-              lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
+              forced_landmark_compare_are_same = lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
               // Enable local search
               if( 1 )
                 {
@@ -662,7 +662,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
                   msp_lmks_from_orig_space[Lls_info_pair->first] =
                     orig2msp_lmk_tfm->TransformPoint( this->m_orig_lmks_updated.at(Lls_info_pair->first) );
                 }
-              lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
+              forced_landmark_compare_are_same = lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
             }
           } // End of arbitrary landmarks detection for the rest of "new" ones
       }   // End of arbitrary landmarks detection by linear model estimation
@@ -675,9 +675,15 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
             ( this->m_ResultsDir + "/EMSP.fcsv",
               local_msp_lmks_algo_found );
         }
-      lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
+      forced_landmark_compare_are_same = lmk_check_differences( m_orig_lmks_forced, m_orig_lmks_updated, false, __FILE__ , __LINE__);
     } // End of local searching kernel
+
   }   // End of local searching
+  if(!forced_landmark_compare_are_same)
+    {
+      std::cerr << "FORCED LANDMARKS NOT PRESERVED" << std::endl;
+      exit(-1);
+    }
 }
 
 
