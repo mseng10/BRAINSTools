@@ -270,6 +270,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       if( mapHasKey(m_orig_lmks_forced, "AC") )
         {
           std::cout << "Skip estimation of AC , directly forced by command line." << std::endl;
+          //TODO:  Simplify these transforms.
           msp_lmks_algo_found["AC"] = eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_forced.at("AC") ) );
         }
       else
@@ -457,7 +458,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
         unsigned int numBaseLandmarks = processingList.size();
         // Initialize the iteratively updated lmks (addinga new lmk each time through
         // the loop, from the initial 6 main lmks.
-        LandmarksMapType iteratively_updated_msp_lmks = msp_lmks_from_orig_space; //Initialize with lmks from orig_space
+
         unsigned int dim = 3;
         for( unsigned int LlsMat_idx = 1; LlsMat_idx <= m_LlsMatrices.size(); ++LlsMat_idx )
           {
@@ -486,6 +487,7 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
               // Find search center by linear model estimation with
               // dimension reduction.
               // The result will be stored into m_msp_lmks[LlsMatrix_name]
+              LandmarksMapType iteratively_updated_msp_lmks = msp_lmks_from_orig_space; //Initialize with lmks from orig_space
               LinearEstimation( iteratively_updated_msp_lmks, processingList, numBaseLandmarks );
 
               // check whether it is midline landmark, set search range
@@ -506,11 +508,11 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
 
               // Obtain the position of the current landmark in other spaces
               this->m_orig_lmks_updated[LlsMatrix_name] = this->m_orig2msp_img_tfm->TransformPoint( msp_lmks_from_orig_space.at(LlsMatrix_name) );
-              {
-                msp_lmks_algo_found[LlsMatrix_name] =  eyeFixed2msp_lmk_tfm->TransformPoint(
+
+              msp_lmks_algo_found[LlsMatrix_name] =  eyeFixed2msp_lmk_tfm->TransformPoint(
                   orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_updated.at(LlsMatrix_name) )
                 );
-              }
+
 
               // Enable local search
               if( 1 )
