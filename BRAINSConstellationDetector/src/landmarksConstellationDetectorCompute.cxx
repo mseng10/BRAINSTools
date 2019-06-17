@@ -215,14 +215,15 @@ void landmarksConstellationDetector::Compute( SImageType::Pointer orig_space_ima
       SImageType::PointType::VectorType RPtoCEC;
       std::cout << "Processing 4VN..." << std::endl;
       {
+        // TODO: Should get the eye centers for msp_lmks_algo_found
         SImageType::PointType mspSpaceCEC;
-        SImageType::PointType eyeFixed_LE =
+        const SImageType::PointType msp_LE =
           eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_forced.at("LE") ) );
-        SImageType::PointType eyeFixed_RE =
+        const SImageType::PointType msp_RE =
           eyeFixed2msp_lmk_tfm->TransformPoint( orig2eyeFixed_lmk_tfm->TransformPoint( this->m_orig_lmks_forced.at("RE") ) );
 
 
-        mspSpaceCEC.SetToMidPoint( eyeFixed_LE, eyeFixed_RE );
+        mspSpaceCEC.SetToMidPoint( msp_LE, msp_RE );
         mspSpaceCEC[0] = 0; // Search starts on the estimated MSP
         RPtoCEC = mspSpaceCEC - msp_lmks_algo_found["RP"];
       }
