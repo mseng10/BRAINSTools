@@ -30,7 +30,13 @@ make -j${NUMOFTHREADS} -k
 ## NOTE: To find the number of threads from the OSX terminal, use:
 ##    sysctl -n hw.ncpu
 ```
-
+### Rebuilding
+After changes are made, follow these steps to rebuild your build directory:
+```bash
+cd build
+make clean
+make -j${NUMOFTHREADS} -k
+```
 ## Development
 Developers should follow these instructions:
 ```bash
@@ -54,7 +60,7 @@ __1__ - Run the absolute minimum (very fast tests)
   * These should always pass before any code commit!
 
 __2__ - Run fast tests on continuous builds.
-* These need immediate attention if they begin to fail!
+  * These need immediate attention if they begin to fail!
 
 __3__ - Run moderate nightly tests.
   * These need immediate attention if they begin to fail!
