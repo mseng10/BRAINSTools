@@ -1,6 +1,6 @@
 The BRAINSTools project is a harness to assist in building the many BRAINSTools under development.
 
-# Building
+## Building
 Example sessions for a clean build.
 
 ### Mac OSX
@@ -31,15 +31,19 @@ make -j${NUMOFTHREADS} -k
 ##    sysctl -n hw.ncpu
 ```
 
-# Development
-Developers should run:
+## Development
+Developers should follow these instructions:
 ```bash
 cd ${DIRECTORY}/BRAINSTools/
 bash ./Utilities/SetupForDevelopment.sh
 ```
+If developing on Mac OSX, make sure the xcode command line tools are installed with the command:
+```bash
+xcode-select --install
+``` 
 
-# Testing
-`BRAINSTools_MAX_TEST_LEVEL` adjusts how agressive the test suite is so that long running tests or incomplete tests can easily be silenced
+## Testing
+`BRAINSTools_MAX_TEST_LEVEL` adjusts how aggressive the test suite is so that long running tests or incomplete tests can easily be silenced
 
 ```cmake
 set(BRAINSTools_MAX_TEST_LEVEL 3 
@@ -49,23 +53,23 @@ set(BRAINSTools_MAX_TEST_LEVEL 3
 __1__ - Run the absolute minimum (very fast tests) 
   * These should always pass before any code commit!
 
-__3__ - Run fast tests on continous builds.
+__2__ - Run fast tests on continuous builds.
 * These need immediate attention if they begin to fail!
 
-__5__ - Run moderate nightly tests.
+__3__ - Run moderate nightly tests.
   * These need immediate attention if they begin to fail!
 
-__7__ - Run long running extensive test that are a burden to normal development.
+__4__ - Run long running extensive test that are a burden to normal development.
   * Testing done 1x per week.
 
-__8__ - Run tests that fail due to incomplete test building. 
+__5__ - Run tests that fail due to incomplete test building. 
   * These are good ideas for test that we don't have time to make robust.
 
-__9__ - Run tests that don't have much utility currently.
+__6__ - Run tests that don't have much utility currently.
 
 ***
 
-###### Example
+##### Example
 setting a test's max level in TestSuite/CMakeLists.txt
 ```cmake
 if( ${BRAINSTools_MAX_TEST_LEVEL} GREATER 8)
@@ -75,3 +79,9 @@ if( ${BRAINSTools_MAX_TEST_LEVEL} GREATER 8)
       itkResampleInPlaceImageFilterTest input1 transform1 checkresult
   )
 ```
+## External Links
+__1.__ More information on individual [BRAINSTools](/https://github.com/BRAINSia/BRAINSTools/wiki)
+
+__2.__ NAMICExternalProjects providing set of [tools](/https://github.com/BRAINSia/NAMICExternalProjects)
+
+__3.__ [ANTs](/https://github.com/ANTsX/ANTs) package
