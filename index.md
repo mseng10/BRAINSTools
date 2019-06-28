@@ -1,7 +1,7 @@
 The BRAINSTools project is a harness to assist in building the many BRAINSTools under development.
 
 # Building
-Example sessions for a clean build:
+Example sessions for a clean build.
 
 ### Mac OSX
 Building BRAINSTools on mac is the same as making any standard out of source cmake build.
@@ -32,7 +32,11 @@ make -j${NUMOFTHREADS} -k
 ```
 
 # Development
-Developers should run the "./Utilities/SetupForDevelopment.sh" script to get started.
+Developers should run:
+```bash
+cd ${DIRECTORY}/BRAINSTools/
+bash ./Utilities/SetupForDevelopment.sh
+```
 
 # Testing
 `BRAINSTools_MAX_TEST_LEVEL` adjusts how agressive the test suite is so that long running tests or incomplete tests can easily be silenced
