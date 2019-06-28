@@ -14,7 +14,7 @@ __For developers:__
 cd ${DIRECTORY}/BRAINSTools/
 bash ./Utilities/SetupForDevelopment.sh
 ```
-###Mac OSX
+### Mac OSX
 Building BRAINSTools on mac is the same as making any standard out of source cmake build.
 
 __1.__ Clone BRAINSTools into a directory:
@@ -42,7 +42,7 @@ make -j${NUMOFTHREADS} -k
 ##    sysctl -n hw.ncpu
 ```
 
-###Linux RedHat 6
+### Linux RedHat 6
 Example of clean build on Linus RedHat 6.
 
 __1.__ Clone BRAINSTools into a directory:
@@ -70,7 +70,7 @@ make -j${NUMOFTHREADS} -k
 make
 ``` 
 
-###Linux Debian (Ubuntu)
+### Linux Debian (Ubuntu)
 Building BRAINSTools on a fresh install has the additional dependency of building CMake on your system. You cannot use the version 
 from apt-get as that does some unnatural things with Python resources to be backwards compatible 
 (see http://public.kitware.com/Bug/view.php?id=14156).
