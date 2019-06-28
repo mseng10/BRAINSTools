@@ -1,19 +1,8 @@
 The BRAINSTools project is a harness to assist in building the many BRAINSTools under development.
 
 # Building
-Example session for a clean build on Linux using gcc-4.2:
-```bash
-DIRECTORY=~/src/mytester
-mkdir ${DIRECTORY}
-cd ${DIRECTORY}
-git clone git://github.com/BRAINSia/BRAINSTools.git
-```
-__For developers:__
+Example sessions for a clean build:
 
-```bash
-cd ${DIRECTORY}/BRAINSTools/
-bash ./Utilities/SetupForDevelopment.sh
-```
 ### Mac OSX
 Building BRAINSTools on mac is the same as making any standard out of source cmake build.
 
